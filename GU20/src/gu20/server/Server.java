@@ -19,6 +19,7 @@ import gu20.Helpers;
 
 public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
+	public static final String LOGGER_PATH = "/home/lupont/Desktop/log.log";
 	
 	// The usernames of the currently connected users.
 	private List<MockUser> connectedUsers;
@@ -31,7 +32,7 @@ public class Server implements Runnable {
 	private Thread server = new Thread(this);
 	
 	public Server(int port) {
-		Helpers.addFileHandler(LOGGER, "/home/lupont/Desktop/log.log");
+		Helpers.addFileHandler(LOGGER, LOGGER_PATH);
 		
 		connectedUsers = new ArrayList<>();
 		users = new HashMap<>();
@@ -107,6 +108,7 @@ public class Server implements Runnable {
 						
 						MockUser user = (MockUser) obj;
 						
+						// If the user who wants to sign in is using a username that is already signed in, give error message.
 						if (connectedUsers.stream().anyMatch(u -> {
 							return u.getUsername().equals(user.getUsername());
 						})) {
@@ -160,7 +162,8 @@ public class Server implements Runnable {
 						outputStream.writeUTF("DISCONNECT_ACCEPTED");
 						outputStream.flush();
 						
-						LOGGER.log(Level.INFO, "User disconnected.", user);
+						LOGGER.log(Level.INFO, "User disconnected: {0}.", user);
+						LOGGER.log(Level.INFO, "Number of connected users: {0}", connectedUsers.size());
 					}
 					else {
 						
