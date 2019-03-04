@@ -21,6 +21,8 @@ public class Client {
 	}
 	
 	public void connect() {
+		ClientThread cT = new ClientThread();
+		cT.establishConnection(ip, port);
 		
 	}
 	
@@ -34,12 +36,12 @@ public class Client {
 	
 	
 	
-	private class MessageThread extends Thread {
+	private class ClientThread extends Thread {
 		private Message message;
 		private Socket socket;
 
-		public MessageThread(Message message) {
-			this.message = message;
+		public ClientThread() {
+			
 		}
 		
 		public void EstablishConnection(String ip, int port) {
@@ -58,9 +60,9 @@ public class Client {
 			try {
 				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 				oos.writeObject(message);
-				if(message == DisconnectMessage) {
+				//if(message == DisconnectMessage) {
 				socket.close();
-				}
+				//}
 			} catch (IOException e) {
 				System.err.println(e);
 			}
