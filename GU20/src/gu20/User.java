@@ -14,4 +14,11 @@ public class User implements Serializable {
 		this.username = username;
 		this.avatar = avatar;
 	}
+	
+	@Override
+	public int hashCode() {
+		int hash = username.hashCode() * 31;
+		hash = hash * avatar.hashCode() * 41;
+		return hash;
+	}
 }
