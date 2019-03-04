@@ -18,7 +18,12 @@ public class User implements Serializable {
 	@Override
 	public int hashCode() {
 		int hash = username.hashCode() * 31;
-		hash = hash * avatar.hashCode() * 41;
+		hash = hash * (avatar != null ? avatar.hashCode() : 31) * 41;
 		return hash;
+	}
+	
+	@Override
+	public String toString() {
+		return username;
 	}
 }
