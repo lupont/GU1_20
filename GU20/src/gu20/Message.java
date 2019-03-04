@@ -8,8 +8,8 @@ import javax.swing.ImageIcon;
 public class Message implements Serializable {
 	private static final long serialVersionUID = 91582891225L;
 
-	private User sender;
-	private User[] recipients;
+	private MockUser sender;
+	private MockUser[] recipients;
 	
 	private String text;
 	private ImageIcon image;
@@ -17,7 +17,7 @@ public class Message implements Serializable {
 	private Date serverReceived;
 	private Date recipientsReceived;
 	
-	public Message(User sender, User[] recipients, String text, ImageIcon image) {
+	public Message(MockUser sender, MockUser[] recipients, String text, ImageIcon image) {
 		this.sender = sender;
 		this.recipients = recipients;
 		

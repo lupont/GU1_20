@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gu20.User;
+import gu20.MockUser;
 import gu20.Message;
 import gu20.Helpers;
 
@@ -21,10 +21,10 @@ public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 	
 	// The usernames of the currently connected users.
-	private List<User> connectedUsers;
+	private List<MockUser> connectedUsers;
 	
 	// The HashMap with every user ever connected to the server. The key is the User, and the value is the list of messages the user has sent.
-	private HashMap<User, List<Message>> users;
+	private HashMap<MockUser, List<Message>> users;
 	
 	private ServerSocket serverSocket;
 	
@@ -48,6 +48,8 @@ public class Server implements Runnable {
 	
 	@Override
 	public void run() {
+		LOGGER.log(Level.INFO, "Server is waiting for clients...");
+
 		while (true) {
 			try {
 				Socket socket = serverSocket.accept();
@@ -86,9 +88,7 @@ public class Server implements Runnable {
 		}
 		
 		@Override
-		public void run() {
-			LOGGER.log(Level.INFO, "Server is waiting for clients...");
-			
+		public void run() {			
 			try (
 				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
@@ -103,9 +103,20 @@ public class Server implements Runnable {
 					Object obj = inputStream.readObject();
 					
 					// Make sure that it is a user.
-					if (obj instanceof User) {
+					if (obj instanceof MockUser) {
 						
-						User user = (User) obj;
+						MockUser user = (MockUser) obj;
+						
+						if (connectedUsers.stream().anyMatch(u -> {
+							return u.getUsername().equals(user.getUsername());
+						})) {
+							outputStream.writeUTF("CONNECT_FAILED");
+							outputStream.writeUTF("Username in use.");
+							outputStream.flush();
+							
+							LOGGER.log(Level.WARNING, "Client attempted to sign in with occupied username: {0}", user);
+							return;	
+						}
 
 						// If the server does not already know the user, add it to the HashMap.
 						if (!users.containsKey(user)) {
@@ -119,12 +130,14 @@ public class Server implements Runnable {
 						outputStream.writeUTF("CONNECT_ACCEPTED");
 						outputStream.flush();
 						
-						LOGGER.log(Level.INFO, "User connected.", user);
+						LOGGER.log(Level.INFO, "User connected: {0}.", user);
+						LOGGER.log(Level.INFO, "Number of connected users: {0}", connectedUsers.size());
 					}
 					else {
 						
 						// The object was not a User instance, tell the client that the connection failed.
 						outputStream.writeUTF("CONNECT_FAILED");
+						outputStream.writeUTF("User could not be parsed from object.");
 						outputStream.flush();
 
 						LOGGER.log(Level.WARNING, "A connection attempt failed because the object could not be parsed as a User.", obj);
@@ -137,8 +150,8 @@ public class Server implements Runnable {
 					Object obj = inputStream.readObject();
 					
 					// Make sure that it is a user.
-					if (obj instanceof User) {
-						User user = (User) obj;
+					if (obj instanceof MockUser) {
+						MockUser user = (MockUser) obj;
 						
 						// Remove the user from the currently connected ones.
 						connectedUsers.remove(user);

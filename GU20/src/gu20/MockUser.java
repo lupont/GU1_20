@@ -4,16 +4,23 @@ import java.io.Serializable;
 
 import javax.swing.ImageIcon;
 
-public class User implements Serializable {
+/**
+ * A mock of how a user could be implemented, used for testing the Server.
+ * @author lupont
+ *
+ */
+public class MockUser implements Serializable {
 	private static final long serialVersionUID = 918248172419L;
 
 	private String username;
 	private ImageIcon avatar;
 	
-	public User(String username, ImageIcon avatar) {
+	public MockUser(String username, ImageIcon avatar) {
 		this.username = username;
 		this.avatar = avatar;
 	}
+	
+	public String getUsername() { return username; }
 	
 	@Override
 	public int hashCode() {
