@@ -33,11 +33,11 @@ public class Client {
 		cT.disconnect(ip, port);
 	}
 
-	//behövve lista ut hur messages funkar för att fixa detta
-	public void sendMessage(Message message) {
+	public void sendMessage(ArrayList<Client> recievers, Message message) {
 		
 
 	}
+	
 	
 	public Message getMessage(Message message) {
 		return null;
