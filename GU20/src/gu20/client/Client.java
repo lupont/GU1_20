@@ -1,4 +1,4 @@
-package gu20;
+package gu20.client;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -8,6 +8,9 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import gu20.Message;
+import gu20.User;
 
 public class Client {
 

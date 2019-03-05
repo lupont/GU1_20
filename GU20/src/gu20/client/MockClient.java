@@ -1,4 +1,4 @@
-package gu20.server;
+package gu20.client;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

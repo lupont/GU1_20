@@ -1,4 +1,4 @@
-package gu20.server;
+package gu20.client;
 
 import gu20.MockUser;
 
