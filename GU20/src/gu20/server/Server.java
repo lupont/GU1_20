@@ -9,6 +9,7 @@ import java.net.Socket;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -157,18 +158,29 @@ public class Server implements Runnable {
 						
 						// Remove the user from the currently connected ones.
 //						connectedUsers.remove(user);
-						for (MockUser u : connectedUsers) {
+						Iterator<MockUser> iterator = connectedUsers.iterator();
+						boolean hasRemoved = false;
+						while (iterator.hasNext()) {
+							MockUser u = iterator.next();
 							if (u.getUsername().equals(user.getUsername())) {
-								connectedUsers.remove(u);
+								iterator.remove();
+
+								// Tell the client that the disconnection went well.
+								outputStream.writeUTF("DISCONNECT_ACCEPTED");
+								outputStream.flush();
+								
+								LOGGER.log(Level.INFO, "User disconnected: {0}.", user);
+								LOGGER.log(Level.INFO, "Number of connected users: {0}", connectedUsers.size());
+								hasRemoved = true;
 							}
 						}
 						
-						// Tell the client that the disconnection went well.
-						outputStream.writeUTF("DISCONNECT_ACCEPTED");
-						outputStream.flush();
-						
-						LOGGER.log(Level.INFO, "User disconnected: {0}.", user);
-						LOGGER.log(Level.INFO, "Number of connected users: {0}", connectedUsers.size());
+						if (!hasRemoved) {
+							outputStream.writeUTF("DISCONNECT_FAILED");
+							outputStream.flush();
+							
+							LOGGER.log(Level.WARNING, "User tried to disconnect, but was not connected: {0}.", user);
+						}
 					}
 					else {
 						

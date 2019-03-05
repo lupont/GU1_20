@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import gu20.Helpers;
+
 public class MockServerPanel extends JPanel {
 	private JTextArea taLog;
 	
@@ -17,8 +19,7 @@ public class MockServerPanel extends JPanel {
 		setLayout(new BorderLayout());
 		
 		try {
-			InetAddress address = InetAddress.getLocalHost();
-			add(new JLabel("IP: " + address.getHostAddress()), BorderLayout.NORTH);
+			add(new JLabel("IP: " + Helpers.getFirstNonLoopbackIPv4Address()), BorderLayout.NORTH);
 		}
 		catch (Exception ex) {}
 		
