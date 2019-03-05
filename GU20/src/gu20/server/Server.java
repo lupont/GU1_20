@@ -19,7 +19,7 @@ import gu20.Helpers;
 
 public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
-	public static final String LOGGER_PATH = "/home/lupont/Desktop/log.log";
+	public static final String LOGGER_PATH = "logs/log.log";
 	
 	// The usernames of the currently connected users.
 	private List<MockUser> connectedUsers;
@@ -156,7 +156,12 @@ public class Server implements Runnable {
 						MockUser user = (MockUser) obj;
 						
 						// Remove the user from the currently connected ones.
-						connectedUsers.remove(user);
+//						connectedUsers.remove(user);
+						for (MockUser u : connectedUsers) {
+							if (u.getUsername().equals(user.getUsername())) {
+								connectedUsers.remove(u);
+							}
+						}
 						
 						// Tell the client that the disconnection went well.
 						outputStream.writeUTF("DISCONNECT_ACCEPTED");
