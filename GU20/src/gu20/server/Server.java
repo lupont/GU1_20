@@ -20,7 +20,7 @@ import gu20.Helpers;
 
 public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
-	public static final String LOGGER_PATH = "logs/log.log";
+	public static final String LOGGER_PATH = "logs/" + Server.class.getName() + ".log";
 	
 	// The usernames of the currently connected users.
 	private List<MockUser> connectedUsers;
