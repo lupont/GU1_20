@@ -3,7 +3,9 @@ package gu20.server;
 import java.awt.BorderLayout;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.InetAddress;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -13,6 +15,12 @@ public class MockServerPanel extends JPanel {
 	
 	public MockServerPanel() {
 		setLayout(new BorderLayout());
+		
+		try {
+			InetAddress address = InetAddress.getLocalHost();
+			add(new JLabel("IP: " + address.getHostAddress()), BorderLayout.NORTH);
+		}
+		catch (Exception ex) {}
 		
 		taLog = new JTextArea();
 		taLog.setEditable(false);
