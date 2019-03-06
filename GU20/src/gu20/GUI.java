@@ -41,6 +41,9 @@ public class GUI extends JPanel {
 	private JPanel contactPanel;
 	private MessagePanel messagePanel;
 
+	public GUI() {
+		this(new User("Test Testsson"));
+	}
 	public GUI(User user) {
 		this.setPreferredSize(new Dimension(700, 300));
 		setLayout(new BorderLayout());
