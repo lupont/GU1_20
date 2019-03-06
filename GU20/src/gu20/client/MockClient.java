@@ -21,12 +21,10 @@ import gu20.MockUser;
  * @author lupont
  *
  */
-public class MockClient implements Serializable {
+public class MockClient implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(MockClient.class.getName());
 	private static final String LOGGER_PATH = "logs/" + MockClient.class.getName() + ".log";
 	
-	private static final long serialVersionUID = 235235245L;
-
 	private MockUser user;
 
 	private String ip;
@@ -36,6 +34,8 @@ public class MockClient implements Serializable {
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
 	
+	private Thread client = new Thread(this);
+	
 	public MockClient(MockUser user, String ip, int port) {
 		Helpers.addFileHandler(LOGGER, LOGGER_PATH);
 		
@@ -43,66 +43,51 @@ public class MockClient implements Serializable {
 		this.ip = ip;
 		this.port = port;
 		
-		System.out.println("Client constructed.");
+		client.start();
+	}
+	
+	@Override
+	public void run() {
+		connect();
 	}
 	
 	public String getUsername() { return user.getUsername(); }
 	
-	public void connect() {
-		System.out.println("Client connecting...");
+	private void connect() {
 		try {
 			socket = new Socket(ip, port);
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
 			inputStream = new ObjectInputStream(socket.getInputStream());
-			
-			System.out.println("Created socket and streams.");
-			
+						
 			outputStream.writeUTF("CONNECT");
-			outputStream.writeObject(this);
+			outputStream.writeObject(user);
 			outputStream.flush();
-			
-			System.out.println("Client sent CONNECT request...");
-
-			String response = inputStream.readUTF();
-			
-			if (response.equals("CONNECT_ACCEPTED")) {
-				System.out.println("You are now connected to the server.");
-			}
-			else if (response.equals("CONNECT_FAILED")) {
-				String reason = inputStream.readUTF();
-				System.out.println("Connection failed: " + reason);
-			}
-			else {
-				System.out.println("Unknown response. This should not happen.");
-			}
 		}
 		catch (IOException ex) {}
 	}
 	
 	public void disconnect() {
+		if (socket.isClosed()) {
+			System.out.println("Client is already disconnected.");
+			return;
+		}
+		
 		try {			
 			outputStream.writeUTF("DISCONNECT");
-			outputStream.writeObject(this);
+			outputStream.writeObject(user);
 			outputStream.flush();
-			
-			String response = inputStream.readUTF();
-			
-			if (response.equals("DISCONNECT_ACCEPTED")) {
-				System.out.println("You are now disconnected from the server.");
-				
-				outputStream.close();
-				inputStream.close();
-				socket.close();
-
-				socket = null;
-				outputStream = null;
-				inputStream = null;
-				return;
-			}
-			else if (response.equals("DISCONNECT_FAILED")) {
-				System.out.println("Disconnection failed. Please try again!");
-			}
 		}
-		catch (IOException ex) {}
+		catch (IOException ex) {
+			System.out.println("Exception on disconnect: " + ex.getMessage());
+		}
+		finally {
+			try { 
+				if (socket != null) {
+					socket.close(); 
+					System.out.println("Disconnected from the server.");
+				}
+			}
+			catch (IOException ex) {}
+		}
 	}
 }

@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gu20.Message;
+import gu20.MockUser;
 import gu20.Clients;
 import gu20.Helpers;
 import gu20.client.MockClient;
@@ -122,78 +123,6 @@ public class Server implements Runnable {
 			this.socket = socket;
 		}
 		
-		private void onConnect(MockClient client, ObjectOutputStream outputStream, ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-			if (client == null) {
-				outputStream.writeUTF("CONNECT_FAILED");
-				outputStream.writeUTF("User could not be parsed from object.");
-				outputStream.flush();
-
-				LOGGER.log(Level.WARNING, "A connection attempt failed because the object could not be parsed as a User.");
-				return;
-			}
-			
-			// If the user who wants to sign in is using a username that is already signed in, give error message.
-			if (connectedClients.stream().anyMatch(u -> {
-				return u.getUsername().equals(client.getUsername());
-			})) {
-				outputStream.writeUTF("CONNECT_FAILED");
-				outputStream.writeUTF("Username in use.");
-				outputStream.flush();
-				
-				LOGGER.log(Level.WARNING, "Client attempted to sign in with occupied username: {0}", client);
-				return;	
-			}
-
-			// If the server does not already know the user, add it to the HashMap.
-			if (!users.containsKey(client)) {
-				users.put(client, new ArrayList<>());								
-			}
-			
-			// Add the user to the currently connected ones.
-			connectedClients.add(client);
-			
-			// Tell the client that the connection went well.
-			outputStream.writeUTF("CONNECT_ACCEPTED");
-			outputStream.flush();
-			
-			LOGGER.log(Level.INFO, "User connected: {0}.", client);
-			LOGGER.log(Level.INFO, "Number of connected users: {0}", connectedClients.size());
-		}
-		
-		private void onDisconnect(MockClient client, ObjectOutputStream outputStream, ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
-			if (client == null) {
-
-				// The object was not a user instance, tell the client that the disconnection failed.
-				outputStream.writeUTF("DISCONNECT_FAILED");
-				outputStream.flush();
-				
-				LOGGER.log(Level.WARNING, "A disconnection attempt failed because the object could not be parsed as a User.");
-				return;
-			}
-			
-			Iterator<MockClient> iterator = connectedClients.iterator();
-
-			while (iterator.hasNext()) {
-				MockClient u = iterator.next();
-				if (u.getUsername().equals(client.getUsername())) {
-					iterator.remove();
-
-					// Tell the client that the disconnection went well.
-					outputStream.writeUTF("DISCONNECT_ACCEPTED");
-					outputStream.flush();
-					
-					LOGGER.log(Level.INFO, "User disconnected: {0}.", client);
-					LOGGER.log(Level.INFO, "Number of connected users: {0}", connectedClients.size());
-					return;
-				}
-			}
-			
-			outputStream.writeUTF("DISCONNECT_FAILED");
-			outputStream.flush();
-			
-			LOGGER.log(Level.WARNING, "User tried to disconnect, but was not connected: {0}.", client);
-		}
-		
 		@Override
 		public void run() {			
 			try (
@@ -208,40 +137,43 @@ public class Server implements Runnable {
 					
 					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();
+					MockUser user = (MockUser) obj;
 					
-					if (obj instanceof MockClient) {
-						onConnect((MockClient) obj, outputStream, inputStream);
-//						new UpdateHandler().start();
-					}
-					else {
-						onConnect(null, outputStream, inputStream);
+					if (!clients.containsKey(user) || clients.get(user) == null) {
+						clients.put(user, socket);
+						System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") connected to the server.");
+						Helpers.printClients(clients);
 					}
 				}
-				// If it is a DISCONNECT request...
-				else if (method.equals("DISCONNECT")) {
-					
-					// ... the next part of the request should contain a User object.
-					Object obj = inputStream.readObject();
-					
-					if (obj instanceof MockClient) {
-						onDisconnect((MockClient) obj, outputStream, inputStream);
-						new UpdateHandler().start();
+				
+				while (true) {
+					// If it is a DISCONNECT request...
+					try {
+						if (inputStream.readUTF().equals("DISCONNECT")) {
+							
+							// ... the next part of the request should contain a User object.
+							Object obj = inputStream.readObject();
+							MockUser user = (MockUser) obj;
+							
+							clients.put(user, null);
+							System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") disconnected from the server.");
+							Helpers.printClients(clients);
+							interrupt();
+							return;
+						}
 					}
-					else {
-						onDisconnect(null, outputStream, inputStream);
+					catch (EOFException ex) {
+						continue;
 					}
-				}
-				// If MESSAGE request
-				else if (method.equals("MESSAGE")) {
-					Message message = (Message) inputStream.readObject();
-
-					new MessageHandler(message).start();
 				}
 			}
-			catch (ClassNotFoundException | IOException ex) {}
-			
-			try { socket.close(); }
-			catch (IOException ex) {}
+			catch (EOFException ex) {
+				ex.printStackTrace();
+			}
+			catch (IOException ex) {
+				ex.printStackTrace();
+			}
+			catch (ClassNotFoundException ex) {}
 		}
 	}
 }

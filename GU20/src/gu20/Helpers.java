@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
@@ -62,5 +65,22 @@ public final class Helpers {
 	    }
 	    
 	    return null;
+	}
+	
+	public static void printClients(Clients clients) {
+		if (clients.isEmpty()) {
+			System.out.println("No clients to print.");
+			return;
+		}
+		
+		System.out.println();
+		System.out.println("======CLIENTS======");
+		Set<Map.Entry<MockUser, Socket>> entrySet = clients.entrySet();
+		
+		for (Map.Entry<MockUser, Socket> entry : entrySet) {
+			System.out.println(entry.getKey() + ": " + entry.getValue());
+		}
+		System.out.println("===================");
+		System.out.println();
 	}
 }
