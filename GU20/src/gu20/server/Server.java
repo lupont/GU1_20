@@ -25,32 +25,24 @@ public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 	public static final String LOGGER_PATH = "logs/" + Server.class.getName() + ".log";
 	
-	// The usernames of the currently connected users.
-	private List<MockClient> connectedClients;
-	
-	// The HashMap with every user ever connected to the server. The key is the User, and the value is the list of messages the user has sent.
-	private HashMap<MockClient, List<Message>> users;
 	private Clients clients;
 	
 	private ServerSocket serverSocket;
 	
 	private Thread server = new Thread(this);
-	
+
 	public Server(int port) {
 		Helpers.addFileHandler(LOGGER, LOGGER_PATH);
 		
-		connectedClients = new ArrayList<>();
-		users = new HashMap<>();
 		clients = new Clients();
 		
 		try {
 			this.serverSocket = new ServerSocket(port);
+			server.start();
 		} 
 		catch (IOException ex) {
 			LOGGER.log(Level.SEVERE, "The server socket could not be created.", ex);
 		}
-		
-		server.start();
 	}
 	
 	@Override
@@ -60,63 +52,16 @@ public class Server implements Runnable {
 		while (true) {
 			try {
 				Socket socket = serverSocket.accept();
-				// TODO: add socket to a list/map?
 				new ClientListener(socket).start();
 			}
-			catch (IOException ex) {}
+			catch (IOException ex) {
+				System.out.println("IO");
+			}
 		}	
 	}
-
-	public void mockMessageSending() {
-		Message message = new Message(null, null, "Hello world!", null);
-		new MessageHandler(message).start();
-	}
 	
-	/**
-	 * Responsible for handling messages sent by users, as well as send updates to them.
-	 * @author lupont & Ogar
-	 *
-	 */
-	private class MessageHandler extends Thread {
-		private Message message;
-		
-		public MessageHandler(Message message) {
-			this.message = message;
-			// TODO: set the dates on the message
-		}
-		
-		@Override
-		public void run() {
-			System.out.println("Server is handling messages...");
-			
-			try (
-				Socket socket = serverSocket.accept();
-				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
-				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-			) {
-				outputStream.writeUTF("MESSAGE");
-				outputStream.writeObject(message);
-				outputStream.flush();
-							
-				LOGGER.log(Level.INFO, "Sent message.");
-			}
-			catch (IOException ex) {}
-		}
-	}
-	
-	private class UpdateHandler extends Thread {
-		@Override
-		public void run() {
-			
-		}
-	}
-	
-	/**
-	 * Constantly listens for clients connecting and disconnecting.
-	 * @author lupont & ingen annan
-	 *
-	 */
-	private class ClientListener extends Thread {		
+	private class ClientListener extends Thread {
+		// The client's socket
 		private Socket socket;
 		
 		public ClientListener(Socket socket) {
@@ -124,16 +69,16 @@ public class Server implements Runnable {
 		}
 		
 		@Override
-		public void run() {			
+		public void run() {
 			try (
-				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream()); 
 				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 			) {
-				// Get the request type from the stream.
-				String method = inputStream.readUTF();
+				Object obj = inputStream.readObject();
 				
-				// If it is a CONNECT request...
-				if (method.equals("CONNECT")) {
+				if (obj instanceof MockUser) {
+				
+					MockUser user = (MockUser) inputStream.readObject();
 					
 					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();

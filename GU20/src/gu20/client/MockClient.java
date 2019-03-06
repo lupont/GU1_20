@@ -29,7 +29,7 @@ public class MockClient implements Runnable {
 
 	private String ip;
 	private int port;
-	
+
 	private Socket socket;
 	private ObjectOutputStream outputStream;
 	private ObjectInputStream inputStream;
@@ -63,7 +63,6 @@ public class MockClient implements Runnable {
 			outputStream.writeObject(user);
 			outputStream.flush();
 		}
-		catch (IOException ex) {}
 	}
 	
 	public void disconnect() {

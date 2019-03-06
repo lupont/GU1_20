@@ -1,5 +1,7 @@
 package gu20.client;
 
+import java.io.IOException;
+
 import gu20.MockUser;
 
 public class RunClient {
