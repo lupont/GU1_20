@@ -7,7 +7,7 @@ import javax.swing.JFrame;
 public class RunServer {
 	private static Server server;
 	
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
 		startServer(12345);
 		runGUI();
 	}

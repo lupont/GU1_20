@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gu20.Message;
+import gu20.Clients;
 import gu20.Helpers;
 import gu20.client.MockClient;
 
@@ -28,6 +29,7 @@ public class Server implements Runnable {
 	
 	// The HashMap with every user ever connected to the server. The key is the User, and the value is the list of messages the user has sent.
 	private HashMap<MockClient, List<Message>> users;
+	private Clients clients;
 	
 	private ServerSocket serverSocket;
 	
@@ -38,6 +40,7 @@ public class Server implements Runnable {
 		
 		connectedClients = new ArrayList<>();
 		users = new HashMap<>();
+		clients = new Clients();
 		
 		try {
 			this.serverSocket = new ServerSocket(port);
@@ -56,11 +59,16 @@ public class Server implements Runnable {
 		while (true) {
 			try {
 				Socket socket = serverSocket.accept();
+				// TODO: add socket to a list/map?
 				new ClientListener(socket).start();
 			}
 			catch (IOException ex) {}
-		}
-		
+		}	
+	}
+
+	public void mockMessageSending() {
+		Message message = new Message(null, null, "Hello world!", null);
+		new MessageHandler(message).start();
 	}
 	
 	/**
@@ -93,11 +101,6 @@ public class Server implements Runnable {
 			}
 			catch (IOException ex) {}
 		}
-	}
-	
-	public void mockMessageSending() {
-		Message message = new Message(null, null, "Hello world!", null);
-		new MessageHandler(message).start();
 	}
 	
 	private class UpdateHandler extends Thread {
@@ -208,7 +211,7 @@ public class Server implements Runnable {
 					
 					if (obj instanceof MockClient) {
 						onConnect((MockClient) obj, outputStream, inputStream);
-						new UpdateHandler().start();
+//						new UpdateHandler().start();
 					}
 					else {
 						onConnect(null, outputStream, inputStream);
