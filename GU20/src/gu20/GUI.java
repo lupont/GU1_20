@@ -4,11 +4,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -17,27 +23,31 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+
+import sources.Message;
+import sources.User;
 
 
 
-public class GUI extends JPanel implements ActionListener {
-	private JButton btnAdd = new JButton("Add");
-	private JButton btnSend = new JButton("Send");
-	private Font fontButtons = new Font("Sanserif", Font.PLAIN, 21);
-	private JTextField tfWriteMessage = new JTextField();
+public class GUI extends JPanel {
+	
+	private User user;
+	
+	private GUIController controller;
 	
 	private JPanel titlePanel;
 	private JPanel contactPanel;
-	private JPanel messagePanel;
+	private MessagePanel messagePanel;
 
-	
-	public GUI() {
-		this.setPreferredSize(new Dimension(500, 300));
+	public GUI(User user) {
+		this.setPreferredSize(new Dimension(700, 300));
 		setLayout(new BorderLayout());
 		
-		titlePanel = new TitlePanel("Test Testsson"); //Test username
+		this.user = user;
+		
+		titlePanel = new TitlePanel(user.getUsername()); //Test username
 		add(titlePanel, BorderLayout.NORTH);
 		
 		contactPanel = new ContactPanel(contactTest()); //Test contacts
@@ -46,18 +56,23 @@ public class GUI extends JPanel implements ActionListener {
 		messagePanel = new MessagePanel(messagesTest());
 		add(messagePanel, BorderLayout.CENTER);
 		
-		
+		putInFrame();
 	}
 	
-	public void actionPerformed(ActionEvent e) {
-		
-		
+	public void setController(GUIController controller) {
+		this.controller = controller;
+	}
+	
+	public void newMessage(String sender, String strMessage) {
+		Message message = new Message(sender, strMessage);
+		messagePanel.addMessage(message);
+		updateUI();
 	}
 
-	public static void main(String[] args) {
+	private void putInFrame() {
 		JFrame window = new JFrame("Chatt Window");
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		window.add(new GUI());
+		window.add(this);
 		window.pack();
 		window.setVisible(true);
 	}
@@ -68,6 +83,7 @@ public class GUI extends JPanel implements ActionListener {
 	 * @author Alexander Libot
 	 *
 	 */
+	@SuppressWarnings("serial")
 	private class TitlePanel extends JPanel {
 		private JLabel lblTitle;
 		private JLabel lblUser;
@@ -107,15 +123,74 @@ public class GUI extends JPanel implements ActionListener {
 		}
 	}
 	
-	private class PreviewPanel extends JPanel {
+	private class PreviewPanel extends JPanel implements MouseListener {
+		private JPanel contactList;
 		private ArrayList<Contact> contacts;
 		
 		public PreviewPanel(ArrayList<Contact> contacts) {
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			this.contacts = contacts;
+			setLayout(new BorderLayout());
 			
-			for (Contact contact : contacts) {
-				add(contact);
+			contactList = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            contactList.add(new JPanel(), gbc);
+			
+            add(new JScrollPane(contactList));
+			
+			for (Contact contact : this.contacts) {
+	            GridBagConstraints gbc2 = new GridBagConstraints();
+	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
+	            gbc2.weightx = 1;
+	            gbc2.fill = GridBagConstraints.HORIZONTAL;
+				contactList.add(contact, gbc2, 0);
+				
+				contact.addMouseListener(this);
 			}
+		}
+		
+		public void defaultContacts() {
+			for (Contact contact : this.contacts) {
+				contact.setBackground(null);
+				contact.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			}
+			updateUI();
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			defaultContacts();
+			
+			JPanel clickedPanel = (Contact) e.getSource();	
+			clickedPanel.setBorder(BorderFactory.createLoweredBevelBorder());
+			
+			controller.changeContact(clickedPanel.getName());
+			
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	
@@ -166,6 +241,10 @@ public class GUI extends JPanel implements ActionListener {
 			setMaximumSize(new Dimension(200, 100));
 		}
 		
+		public String getName() {
+			return lblName.getText();
+		}
+		
 		/**
 		 * Formats an input string to have right amount of characters per row and number of rows
 		 * @param inputString
@@ -176,14 +255,18 @@ public class GUI extends JPanel implements ActionListener {
 			StringBuilder sb = new StringBuilder();
 			String outputString = null;
 			
+			sb.append("<html>");
+			
 			for (int i = 0; i < inputString.length(); i++) {
 				if (i < 25)
 					sb.append(inputChars[i]);
-				else if (i == 25)
-					sb.append('\n');
+				else if (i == 25) {
+					sb.append("<br>");
+				}
 				else if (i > 25)
 					sb.append(inputChars[i-1]);
 			}
+			sb.append("</html>");
 			outputString = sb.toString();
 			return outputString;
 		}
@@ -191,20 +274,55 @@ public class GUI extends JPanel implements ActionListener {
 	
 	private class MessagePanel extends JPanel {
 		
+		private MessagesPanel messagesPanel;
+		
 		public MessagePanel(ArrayList<Message> messages) {
 			setLayout(new BorderLayout());
-			add(new MessagesPanel(messages), BorderLayout.CENTER);
+			
+			messagesPanel = new MessagesPanel(messages);
+			add(messagesPanel, BorderLayout.CENTER);
 			add(new InputPanel(), BorderLayout.SOUTH);
+		}
+		
+		public void addMessage(Message message) {
+			messagesPanel.addMessage(message);
 		}
 	}
 	
 	private class MessagesPanel extends JPanel {
+		private ArrayList<Message> messages;
+		private JPanel messageList;
+		
 		public MessagesPanel(ArrayList<Message> messages) {
-			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			this.messages = messages;
+			setLayout(new BorderLayout());
+			messageList = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            messageList.add(new JPanel(), gbc);
 			
-			for (Message message : messages) {
-				add(message);
+            add(new JScrollPane(messageList));
+			
+			
+			for (Message message : this.messages) {
+	            GridBagConstraints gbc2 = new GridBagConstraints();
+	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
+	            gbc2.weightx = 1;
+	            gbc2.fill = GridBagConstraints.HORIZONTAL;
+				messageList.add(message, gbc2, -1);
 			}
+		}
+		
+		public void addMessage(Message message) {
+			messages.add(message);
+			
+            GridBagConstraints gbc2 = new GridBagConstraints();
+            gbc2.gridwidth = GridBagConstraints.REMAINDER;
+            gbc2.weightx = 1;
+            gbc2.fill = GridBagConstraints.HORIZONTAL;
+			messageList.add(message, gbc2, -1);
 		}
 	}
 	
@@ -225,7 +343,7 @@ public class GUI extends JPanel implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			String message = tfInput.getText();
 			
-			
+			controller.sendMessage(message);
 			
 		}
 	}
@@ -234,31 +352,90 @@ public class GUI extends JPanel implements ActionListener {
 		private JLabel lblSender;
 		private JLabel lblMessage;
 		
+		private JPanel pnlSender;
+		private JPanel pnlMessage;
+		
 		public Message(String sender, String message) {
 			lblSender = new JLabel(sender);
 			lblMessage = new JLabel(message);
 			
-			lblSender.setBackground(Color.DARK_GRAY);
+			pnlSender = new JPanel();
+			pnlSender.add(lblSender);
+			
+			pnlMessage = new JPanel();
+			pnlMessage.add(lblMessage);
+			
+			pnlSender.setAlignmentX(Component.LEFT_ALIGNMENT);
+			if (sender.equals(user.getUsername()))
+				pnlSender.setBackground(Color.RED);
+			else
+				pnlSender.setBackground(Color.BLUE);
+
+			pnlSender.setMaximumSize(new Dimension(200, 30));
 			
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			
-			add(lblSender);
-			add(lblMessage);
+			add(pnlSender);
+			add(pnlMessage);
 		}
 	}
 
 	//Test of ContactPanel and Contact
+//	private ArrayList<Contact> contactTest() {
+//		Contact contact1 = new Contact("Jim Halpert", "Bears, beats, Battlestar Gallactica", "10:12");
+//		Contact contact2 = new Contact("Stanley", "Are you out of your god damned mind?", "igår");
+//		Contact contact3 = new Contact("Michael Scott", "You miss 100% of the shots you don't take", "2019-02-20");
+//		
+//		ArrayList<Contact> testContacts = new ArrayList<Contact>();
+//		testContacts.add(contact1);
+//		testContacts.add(contact2);
+//		testContacts.add(contact3);
+//		
+//		return testContacts;
+//	}
+	
 	private ArrayList<Contact> contactTest() {
-		Contact contact1 = new Contact("Jim Halpert", "Bears, beats, Battlestar Gallactica", "10:12");
-		Contact contact2 = new Contact("Stanley", "Are you out of your god damned mind?", "igår");
-		Contact contact3 = new Contact("Michael Scott", "You miss 100% of the shots you don't take", "2019-02-20");
+		User tempUser;
+		sources.Message tempMessage;
+		Calendar tempDate;
+		
+		tempUser = user.getContacts().get(0);
+		tempMessage = tempUser.getLatestMessage();
+		tempDate = tempMessage.getDate();
+		Contact contact1 = new Contact(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
+		
+		tempUser = user.getContacts().get(1);
+		tempMessage = tempUser.getLatestMessage();
+		tempDate = tempMessage.getDate();
+		Contact contact2 = new Contact(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
+		
+		tempUser = user.getContacts().get(2);
+		tempMessage = tempUser.getLatestMessage();
+		tempDate = tempMessage.getDate();
+		Contact contact3 = new Contact(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
 		
 		ArrayList<Contact> testContacts = new ArrayList<Contact>();
 		testContacts.add(contact1);
 		testContacts.add(contact2);
 		testContacts.add(contact3);
-		
 		return testContacts;
+	}
+	
+	private String formatDate(Calendar date) {
+		String strDate, strCurrentDate;
+		
+		DateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd");
+		
+		Calendar currentDate = Calendar.getInstance();
+
+		strDate = formatDate.format(date.getTime());
+		strCurrentDate = formatDate.format(currentDate.getTime());
+		
+		if (strDate.equals(strCurrentDate))
+			return "Today";
+		
+		return strDate;
 	}
 	
 	private ArrayList<Message> messagesTest() {
@@ -279,6 +456,7 @@ public class GUI extends JPanel implements ActionListener {
 		
 		return testMessages;
 	}
+	
 }
 
 
