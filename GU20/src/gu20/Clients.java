@@ -1,21 +1,22 @@
 package gu20;
 
+import java.net.Socket;
 import java.util.HashMap;
 
 import gu20.client.MockClient;
 
 public class Clients {
-	private HashMap<MockUser, MockClient> clients;
+	private HashMap<MockUser, Socket> clients;
 	
 	public Clients() {
 		clients = new HashMap<>();
 	}
 	
-	public synchronized void put(MockUser user, MockClient client) {
-		clients.put(user,  client);
+	public synchronized Socket put(MockUser user, Socket socket) {
+		return clients.put(user, socket);
 	}
 	
-	public synchronized MockClient get(MockUser user) {
+	public synchronized Socket get(MockUser user) {
 		return clients.get(user);
 	}
 	
@@ -23,11 +24,11 @@ public class Clients {
 		return clients.containsKey(user);
 	}
 	
-	public synchronized boolean containsValue(MockClient client) {
-		return clients.containsValue(client);
+	public synchronized boolean containsValue(Socket socket) {
+		return clients.containsValue(socket);
 	}
 	
-	public synchronized MockClient remove(MockUser user) {
+	public synchronized Socket remove(MockUser user) {
 		return clients.remove(user);
 	}
 	

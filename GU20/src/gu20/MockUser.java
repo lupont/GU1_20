@@ -20,13 +20,22 @@ public class MockUser implements Serializable {
 		this.avatar = avatar;
 	}
 	
-	public String getUsername() { return username; }
+	public String getUsername() { 
+		return username; 
+	}
+	
+	public ImageIcon getAvatar() {
+		return avatar;
+	}
 	
 	@Override
 	public int hashCode() {
-		int hash = username.hashCode() * 31;
-		hash = hash * (avatar != null ? avatar.hashCode() : 31) * 41;
-		return hash;
+		return username.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return username.equals(((MockUser) obj).getUsername());
 	}
 	
 	@Override

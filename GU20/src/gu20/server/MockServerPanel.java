@@ -32,7 +32,7 @@ public class MockServerPanel extends JPanel {
 		JButton button = new JButton("Send message");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-				server.mockMessageSending();
+//				server.mockMessageSending();
 			}
 		});
 		add(button, BorderLayout.SOUTH);
