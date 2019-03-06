@@ -9,7 +9,7 @@ public class RunServer {
 	
 	public static void main(String[] args) {
 		startServer(12345);
-		runGUI();
+//		runGUI();
 	}
 	
 	private static void startServer(int port) {

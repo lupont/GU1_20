@@ -6,7 +6,10 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.FileHandler;
@@ -67,7 +70,23 @@ public final class Helpers {
 	    return null;
 	}
 	
-	public static void printClients(Clients clients) {
+	public static <T> String joinArray(T[] input, String delimiter) {
+		if (input.length == 0) {
+			return "";
+		}
+		
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < input.length; i++) {
+			builder.append(input[i].toString());
+			
+			if (i != input.length - 1) {
+				builder.append(delimiter);
+			}
+		}
+		return builder.toString();
+	}
+	
+	public static synchronized void printClients(Clients clients) {
 		if (clients.isEmpty()) {
 			System.out.println("No clients to print.");
 			return;
@@ -82,5 +101,24 @@ public final class Helpers {
 		}
 		System.out.println("===================");
 		System.out.println();
+	}
+	
+	public static synchronized MockUser[] getConnectedUsers(Clients clients) {
+		if (clients.isEmpty()) {
+			return new MockUser[0];
+		}
+		
+		List<MockUser> users = new ArrayList<>();
+		Set<Map.Entry<MockUser, Socket>> entrySet = clients.entrySet();
+		
+		for (Map.Entry<MockUser, Socket> entry : entrySet) {
+			if (entry.getValue() != null) {
+				users.add(entry.getKey());
+			}
+		}
+		
+		MockUser[] ret = new MockUser[users.size()];
+		ret = users.toArray(ret);
+		return ret;
 	}
 }

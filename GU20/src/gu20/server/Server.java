@@ -7,19 +7,17 @@ import java.io.ObjectOutputStream;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-
+import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import gu20.Message;
 import gu20.MockUser;
 import gu20.Clients;
 import gu20.Helpers;
-import gu20.client.MockClient;
 
 public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -30,18 +28,20 @@ public class Server implements Runnable {
 	private ServerSocket serverSocket;
 	
 	private Thread server = new Thread(this);
+	private List<ClientListener> clientListeners;
 
 	public Server(int port) {
 		Helpers.addFileHandler(LOGGER, LOGGER_PATH);
 		
 		clients = new Clients();
+		clientListeners = new ArrayList<>();
 		
 		try {
 			this.serverSocket = new ServerSocket(port);
 			server.start();
 		} 
 		catch (IOException ex) {
-			LOGGER.log(Level.SEVERE, "The server socket could not be created.", ex);
+			LOGGER.log(Level.INFO, "The server socket could not be created.", ex);
 		}
 	}
 	
@@ -52,7 +52,12 @@ public class Server implements Runnable {
 		while (true) {
 			try {
 				Socket socket = serverSocket.accept();
-				new ClientListener(socket).start();
+				
+				synchronized (clientListeners) {
+					ClientListener clientListener = new ClientListener(socket);
+					clientListener.start();
+					clientListeners.add(clientListener);
+				}
 			}
 			catch (IOException ex) {
 				System.out.println("IO");
@@ -60,20 +65,60 @@ public class Server implements Runnable {
 		}	
 	}
 	
+	private void updateUserList() {
+		new Thread(new Runnable() {
+			public synchronized void run() {
+				MockUser[] connectedUsers = Helpers.getConnectedUsers(clients);
+				
+				ObjectOutputStream os;
+				synchronized (clientListeners) {
+					for (ClientListener listener : clientListeners) {
+						try {
+							os = listener.getOutputStream();
+							os.writeUTF("UPDATE");
+							os.writeObject(connectedUsers);
+							System.out.println(listener.getUser() == null ? "Server sent update, but user had not been set." : "Server sent update to " + listener.getUser());
+							System.out.println(Helpers.joinArray(connectedUsers, ", "));
+							os.flush();
+						}
+						catch (IOException ex) {}
+					}
+				}
+			}
+		}).start();
+	}
+	
 	private class ClientListener extends Thread {
 		// The client's socket
 		private Socket socket;
+		private ObjectOutputStream outputStream;
+		private ObjectInputStream inputStream;
+		
+		private MockUser user;
 		
 		public ClientListener(Socket socket) {
 			this.socket = socket;
+			
+			try {
+				outputStream = new ObjectOutputStream(socket.getOutputStream());
+				inputStream = new ObjectInputStream(socket.getInputStream());
+			}
+			catch (IOException ex) {
+				System.out.println("Error initializing the streams.");
+			}
+		}
+		
+		public MockUser getUser() {
+			return user;
+		}
+		
+		public ObjectOutputStream getOutputStream() {
+			return outputStream;
 		}
 		
 		@Override
 		public void run() {
-			try (
-				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream()); 
-				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-			) {
+			try {
 				// Get the request type from the stream.
 				String method = inputStream.readUTF();
 				
@@ -86,8 +131,11 @@ public class Server implements Runnable {
 					
 					if (!clients.containsKey(user) || clients.get(user) == null) {
 						clients.put(user, socket);
+						this.user = user;
 						System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") connected to the server.");
 						Helpers.printClients(clients);
+						
+						updateUserList();
 					}
 				}
 				
@@ -103,11 +151,17 @@ public class Server implements Runnable {
 							clients.put(user, null);
 							System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") disconnected from the server.");
 							Helpers.printClients(clients);
+							
+							updateUserList();
+							
 							interrupt();
 							return;
 						}
 					}
 					catch (EOFException ex) {
+						continue;
+					}
+					catch (SocketException ex) {
 						continue;
 					}
 				}
@@ -119,6 +173,13 @@ public class Server implements Runnable {
 				ex.printStackTrace();
 			}
 			catch (ClassNotFoundException ex) {}
+			finally {
+				try {
+					outputStream.close();
+					inputStream.close();
+				}
+				catch (IOException ex) {}
+			}
 		}
 	}
 }

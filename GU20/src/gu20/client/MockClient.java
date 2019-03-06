@@ -4,16 +4,10 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import gu20.Helpers;
-import gu20.Message;
 import gu20.MockUser;
 
 /**
@@ -63,7 +57,41 @@ public class MockClient implements Runnable {
 			outputStream.writeObject(user);
 			outputStream.flush();
 		}
-		catch (IOException ex) {}
+		catch (IOException ex) {
+			System.out.println("IO exception lol");
+			ex.printStackTrace();
+		}
+		finally {
+			handleCommunication();
+		}
+	}
+	
+	private void handleCommunication() {
+		while (true) {
+			try {
+				listenForUpdate();
+			}
+			catch (IOException ex) {
+				return;
+			}
+			catch (ClassNotFoundException ex) {}
+		}
+	}
+	
+	private void listenForUpdate() throws IOException, ClassNotFoundException {
+		if (inputStream.available() <= 0) {
+			return;
+		}
+
+		System.out.println("Reading");
+		String header = inputStream.readUTF();
+		System.out.println("Read: " + header);
+		
+		if (header.equals("UPDATE")) {
+			Object obj = inputStream.readObject();
+			MockUser[] users = (MockUser[]) obj;
+			System.out.println("Got users: " + Helpers.joinArray(users, ", "));
+		}
 	}
 	
 	public void disconnect() {
