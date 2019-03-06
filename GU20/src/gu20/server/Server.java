@@ -74,12 +74,12 @@ public class Server implements Runnable {
 				ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream()); 
 				ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 			) {
-				Object obj = inputStream.readObject();
+				// Get the request type from the stream.
+				String method = inputStream.readUTF();
 				
-				if (obj instanceof MockUser) {
-				
-					MockUser user = (MockUser) inputStream.readObject();
-					
+				// If it is a CONNECT request...
+				if (method.equals("CONNECT")) {
+					// ... the next part of the request should contain a User object.
 					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();
 					MockUser user = (MockUser) obj;

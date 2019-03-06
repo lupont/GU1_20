@@ -63,6 +63,7 @@ public class MockClient implements Runnable {
 			outputStream.writeObject(user);
 			outputStream.flush();
 		}
+		catch (IOException ex) {}
 	}
 	
 	public void disconnect() {
