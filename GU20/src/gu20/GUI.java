@@ -2,8 +2,10 @@ package gu20;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class GUI extends JPanel implements ActionListener {
 	private JTextField tfWriteMessage = new JTextField();
 	
 	private JPanel titlePanel;
+	private JPanel contactPanel;
+	private JPanel messagePanel;
 
 	
 	public GUI() {
@@ -36,30 +40,13 @@ public class GUI extends JPanel implements ActionListener {
 		titlePanel = new TitlePanel("Test Testsson"); //Test username
 		add(titlePanel, BorderLayout.NORTH);
 		
-		contactTest();
+		contactPanel = new ContactPanel(contactTest()); //Test contacts
+		add(contactPanel, BorderLayout.WEST);
 		
-		btnAdd.setPreferredSize(new Dimension(80, 20));
-		btnAdd.setFont(fontButtons);
-        
-		btnSend.setPreferredSize(new Dimension(80, 20));
-		btnSend.setFont(fontButtons);
-		
-		tfWriteMessage.setPreferredSize(new Dimension(200, 50));
+		messagePanel = new MessagePanel(messagesTest());
+		add(messagePanel, BorderLayout.CENTER);
 		
 		
-		
-		
-		
-		
-		
-		
-
-		btnAdd.addActionListener(this);
-		btnSend.addActionListener(this);
-		
-		add(btnAdd);
-		add(btnSend);
-		add(tfWriteMessage);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -108,16 +95,43 @@ public class GUI extends JPanel implements ActionListener {
 	 *
 	 */
 	private class ContactPanel extends JPanel {
-		private ArrayList<Contact> contacts;
+		
 		
 		public ContactPanel(ArrayList<Contact> contacts) {
-			this.contacts = contacts;
 			
+			setLayout(new BorderLayout());
+			setBorder(BorderFactory.createLineBorder(Color.black, 1));
+			
+			add(new PreviewPanel(contacts), BorderLayout.CENTER);
+			add(new ContactButtonPanel(), BorderLayout.SOUTH);
+		}
+	}
+	
+	private class PreviewPanel extends JPanel {
+		private ArrayList<Contact> contacts;
+		
+		public PreviewPanel(ArrayList<Contact> contacts) {
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			
 			for (Contact contact : contacts) {
 				add(contact);
 			}
+		}
+	}
+	
+	private class ContactButtonPanel extends JPanel {
+		private JButton btnNewChat;
+		private JButton btnLogout;
+		
+		public ContactButtonPanel() {
+			btnNewChat = new JButton("New Chat");
+			btnLogout = new JButton("Logout");
+			
+			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			add(Box.createHorizontalGlue());
+			add(btnNewChat);
+			add(btnLogout);
+			add(Box.createHorizontalGlue());
 		}
 	}
 	
@@ -177,28 +191,64 @@ public class GUI extends JPanel implements ActionListener {
 	
 	private class MessagePanel extends JPanel {
 		
-		public MessagePanel() {
+		public MessagePanel(ArrayList<Message> messages) {
 			setLayout(new BorderLayout());
+			add(new MessagesPanel(messages), BorderLayout.CENTER);
+			add(new InputPanel(), BorderLayout.SOUTH);
 		}
 	}
 	
 	private class MessagesPanel extends JPanel {
-		
+		public MessagesPanel(ArrayList<Message> messages) {
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+			
+			for (Message message : messages) {
+				add(message);
+			}
+		}
 	}
 	
-	private class InputPanel extends JPanel {
+	private class InputPanel extends JPanel implements ActionListener {
 		private JTextField tfInput;
 		private JButton btnSend;
 		
 		public InputPanel() {
 			tfInput = new JTextField();
 			btnSend = new JButton("Send");
+			btnSend.addActionListener(this);
 			
+			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			add(tfInput);
+			add(btnSend);
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String message = tfInput.getText();
+			
+			
+			
+		}
+	}
+	
+	private class Message extends JPanel {
+		private JLabel lblSender;
+		private JLabel lblMessage;
+		
+		public Message(String sender, String message) {
+			lblSender = new JLabel(sender);
+			lblMessage = new JLabel(message);
+			
+			lblSender.setBackground(Color.DARK_GRAY);
+			
+			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+			
+			add(lblSender);
+			add(lblMessage);
 		}
 	}
 
 	//Test of ContactPanel and Contact
-	public void contactTest() {
+	private ArrayList<Contact> contactTest() {
 		Contact contact1 = new Contact("Jim Halpert", "Bears, beats, Battlestar Gallactica", "10:12");
 		Contact contact2 = new Contact("Stanley", "Are you out of your god damned mind?", "igår");
 		Contact contact3 = new Contact("Michael Scott", "You miss 100% of the shots you don't take", "2019-02-20");
@@ -208,11 +258,27 @@ public class GUI extends JPanel implements ActionListener {
 		testContacts.add(contact2);
 		testContacts.add(contact3);
 		
-		ContactPanel cp = new ContactPanel(testContacts);
-		
-		this.add(cp, BorderLayout.WEST);
+		return testContacts;
 	}
-
+	
+	private ArrayList<Message> messagesTest() {
+		Message message1 = new Message("Jim Halpert", "What kind of bear is best");
+		Message message2 = new Message("Dwight Shrute", "That's a ridiculous question");
+		Message message3 = new Message("Jim Halpert", "False, black bear");
+		Message message4 = new Message("Dwight Shrute", "That's debateable, there's basically two schools of thougt");
+		Message message5 = new Message("Jim Halpert", "Fact: Bears eats beats");
+		Message message6 = new Message("Jim Halpert", "Bears, beats, Battlestar Gallactica");
+		
+		ArrayList<Message> testMessages = new ArrayList<Message>();
+		testMessages.add(message1);
+		testMessages.add(message2);
+		testMessages.add(message3);
+		testMessages.add(message4);
+		testMessages.add(message5);
+		testMessages.add(message6);
+		
+		return testMessages;
+	}
 }
 
 
