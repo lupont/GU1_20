@@ -17,7 +17,7 @@ public class GUI extends JPanel implements ActionListener {
 	private JButton btnAdd = new JButton("Add");
 	private JButton btnSend = new JButton("Send");
 	private Font fontButtons = new Font("Sanserif", Font.PLAIN, 21);
-	private JTextField writemessage = new JTextField();
+	private JTextField tfWriteMessage = new JTextField();
 
 	
 	public GUI() {
@@ -28,7 +28,7 @@ public class GUI extends JPanel implements ActionListener {
 		btnSend.setPreferredSize(new Dimension(80, 20));
 		btnSend.setFont(fontButtons);
 		
-		writemessage.setPreferredSize(new Dimension(200, 50));
+		tfWriteMessage.setPreferredSize(new Dimension(200, 50));
 		
 		
 		
@@ -43,7 +43,7 @@ public class GUI extends JPanel implements ActionListener {
 		
 		add(btnAdd);
 		add(btnSend);
-		add(writemessage);
+		add(tfWriteMessage);
 	}
 	
 	public void actionPerformed(ActionEvent e) {
