@@ -54,6 +54,7 @@ public class GUI extends JPanel {
 		add(titlePanel, BorderLayout.NORTH);
 		
 		contactPanel = new ContactPanel(contactTest()); //Test contacts
+//		contactPanel = new ContactPanel(null);
 		add(contactPanel, BorderLayout.WEST);
 		
 		messagePanel = new MessagePanel(messagesTest());
@@ -77,6 +78,7 @@ public class GUI extends JPanel {
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.add(this);
 		window.pack();
+		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 	}
 	
@@ -143,6 +145,7 @@ public class GUI extends JPanel {
 			
             add(new JScrollPane(contactList));
 			
+            try {
 			for (Contact contact : this.contacts) {
 	            GridBagConstraints gbc2 = new GridBagConstraints();
 	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
@@ -152,6 +155,7 @@ public class GUI extends JPanel {
 				
 				contact.addMouseListener(this);
 			}
+            } catch (NullPointerException ex) {}
 		}
 		
 		public void defaultContacts() {
