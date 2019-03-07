@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.logging.Logger;
 
 import gu20.Helpers;
+import gu20.Message;
 import gu20.MockUser;
 
 /**
@@ -42,12 +43,16 @@ public class MockClient implements Runnable {
 	
 	@Override
 	public void run() {
-		connect();
+		try {
+			connect();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public String getUsername() { return user.getUsername(); }
 	
-	private void connect() {
+	private void connect() throws IOException {
 		try {
 			socket = new Socket(ip, port);
 			outputStream = new ObjectOutputStream(socket.getOutputStream());
@@ -62,37 +67,47 @@ public class MockClient implements Runnable {
 			ex.printStackTrace();
 		}
 		finally {
-			handleCommunication();
+			listen();
 		}
 	}
 	
-	private void handleCommunication() {
+	private void listen() throws IOException {
+		//might fix if something breaks
+//		if (inputStream.available() <= 0) {
+//			return;
+//		}
 		while (true) {
 			try {
-				listenForUpdate();
+				
+				String header = inputStream.readUTF();
+				if (header.equals("UPDATE")) {
+					handleUpdate();
+				}
+				else if(header.equals("MESSAGE")) {
+					handleMessage();
+				}
 			}
 			catch (IOException ex) {
-				return;
+				System.out.println("io exception mockclient");
+				continue;
 			}
 			catch (ClassNotFoundException ex) {}
 		}
 	}
 	
-	private void listenForUpdate() throws IOException, ClassNotFoundException {
-		if (inputStream.available() <= 0) {
-			return;
-		}
-
-		System.out.println("Reading");
-		String header = inputStream.readUTF();
-		System.out.println("Read: " + header);
-		
-		if (header.equals("UPDATE")) {
-			Object obj = inputStream.readObject();
-			MockUser[] users = (MockUser[]) obj;
-			System.out.println("Got users: " + Helpers.joinArray(users, ", "));
-		}
+	private void handleUpdate() throws IOException, ClassNotFoundException {
+		Object obj = inputStream.readObject();
+		MockUser[] users = (MockUser[]) obj;
+		System.out.println("Got users: " + Helpers.joinArray(users, ", "));
 	}
+	
+	private void handleMessage() throws ClassNotFoundException, IOException {
+		Object obj = inputStream.readObject();
+		Message message = (Message) obj;
+		System.out.println(user + " recieved message from: " + message.getSender() + " : " + message.getText());
+		
+	}
+	
 	
 	public void disconnect() {
 		if (socket.isClosed()) {
@@ -116,6 +131,17 @@ public class MockClient implements Runnable {
 				}
 			}
 			catch (IOException ex) {}
+		}
+	}
+	
+	public void sendMessage(Message message) {
+		try {
+			outputStream.writeUTF("MESSAGE");
+			outputStream.writeObject(message);
+			outputStream.flush();
+		} 
+		catch (IOException e) {
+			System.out.println("Exception send message (client)");
 		}
 	}
 }

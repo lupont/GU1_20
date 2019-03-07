@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import gu20.MockUser;
 import gu20.Clients;
 import gu20.Helpers;
+import gu20.Message;
 
 public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -88,6 +89,32 @@ public class Server implements Runnable {
 		}).start();
 	}
 	
+	private void sendMessage(Message message) {
+		new Thread(new Runnable() {
+			public synchronized void run() {
+				ObjectOutputStream os;
+				for (MockUser recipient : message.getRecipients()) {
+					for (ClientListener listener : clientListeners) {
+						if (listener.getUser().getUsername().equals(recipient.getUsername())) {
+							os = listener.getOutputStream();
+							try {
+								os.writeUTF("MESSAGE");
+								os.writeObject(message);
+								os.flush();
+								System.out.println(message.getSender() + " Sent message to recipients: " + recipient);
+							} 
+							catch (IOException e) {
+								System.out.println(e);
+							}
+						}
+						// TODO: Add message to unsent queue
+					}
+				}
+				
+			}
+		}).start();
+	}
+	
 	private class ClientListener extends Thread {
 		// The client's socket
 		private Socket socket;
@@ -125,7 +152,6 @@ public class Server implements Runnable {
 				// If it is a CONNECT request...
 				if (method.equals("CONNECT")) {
 					// ... the next part of the request should contain a User object.
-					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();
 					MockUser user = (MockUser) obj;
 					
@@ -142,7 +168,9 @@ public class Server implements Runnable {
 				while (true) {
 					// If it is a DISCONNECT request...
 					try {
-						if (inputStream.readUTF().equals("DISCONNECT")) {
+						String response = inputStream.readUTF();
+						
+						if (response.equals("DISCONNECT")) {
 							
 							// ... the next part of the request should contain a User object.
 							Object obj = inputStream.readObject();
@@ -156,6 +184,14 @@ public class Server implements Runnable {
 							
 							interrupt();
 							return;
+						}
+						else if(response.equals("MESSAGE")) {
+							Object obj = inputStream.readObject();
+							Message message = (Message) obj;
+							
+							//send
+							sendMessage(message);
+	
 						}
 					}
 					catch (EOFException ex) {
