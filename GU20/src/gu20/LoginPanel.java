@@ -1,6 +1,5 @@
 package gu20;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -8,44 +7,56 @@ import java.awt.event.ActionListener;
 
 import javax.swing.*;
 
-import sources.User;
-
-public class LoginPanel extends JPanel {
+public class LoginPanel {
 	
 	private GUIController guiC;
 	
 	private JFrame frame;
 	
-	private JLabel lblTitle;
 	private JTextField tfUserField;
-	private JButton btnLogin;
+
 	
 	
-	public LoginPanel() {
-		setPreferredSize(new Dimension(200,100));
+	public LoginPanel(GUIController guiC) {
+		this.guiC = guiC;
+
+		putInFrame(initPanel());
+	}
+	
+	/**
+	 * Initializes a new panel with a label, textfield and button
+	 * @return New JPanel
+	 */
+	private JPanel initPanel() {
+		JPanel panel = new JPanel();
 		
 		Font titleFont = new Font("Helvetica", Font.BOLD, 20);
-		lblTitle = new JLabel("Chat Program");
+		JLabel lblTitle = new JLabel("Chat Program");
 		lblTitle.setFont(titleFont);
+		
+		JButton btnLogin = new JButton("Login");
+		btnLogin.addActionListener(new LoginListener());
 		
 		tfUserField = new JTextField();
 		tfUserField.setPreferredSize(new Dimension(180, 30));
 		tfUserField.setText("Enter username");
+		tfUserField.addActionListener(new LoginListener());
 		
-		btnLogin = new JButton("Login");
-		btnLogin.addActionListener(new LoginListener());
-
-		add(lblTitle);
-		add(Box.createVerticalGlue());
-		add(tfUserField);
-		add(Box.createVerticalGlue());
-		add(btnLogin);
+		panel.setPreferredSize(new Dimension(200,100));
+		
+		panel.add(lblTitle);
+		panel.add(Box.createVerticalGlue());
+		panel.add(tfUserField);
+		panel.add(Box.createVerticalGlue());
+		panel.add(btnLogin);
+		
+		return panel;
 	}
 	
-	public void putInFrame() {
+	private void putInFrame(JPanel panel) {
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(this);
+		frame.add(panel);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(false);
@@ -60,24 +71,8 @@ public class LoginPanel extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			User user = new User(tfUserField.getText());
-			guiC.setClient(user);
-			guiC.testInit();
 			disposeFrame();
-			guiC.openGUI();
+			guiC.login(tfUserField.getText());
 		}	
 	}
-	
-	public void setController (GUIController guiC) {
-		this.guiC = guiC;
-	}
-	
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run() {
-				new LoginPanel();
-			}
-		});
-	}
-
 }

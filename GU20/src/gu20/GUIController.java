@@ -1,74 +1,109 @@
 package gu20;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.SwingUtilities;
 
-import sources.Message;
-import sources.User;
+import gu20.client.MockClient;
 
+/**
+ * Control-class for communication between GUI and server/client
+ * 
+ * @author Alexander Libot
+ *
+ */
 public class GUIController {
 	
-	private User user;
+//	private User user;
+	
+	private MockClient client;
 	
 	private GUI gui;
-	private LoginPanel lp;
+//	private LoginPanel lp;
 	
+	/**
+	 * Creates new GUIController and opens new login window
+	 */
 	public GUIController() {
-		
+		openLoginWindow();
 	}
 	
-	public GUIController(User user) {
-		this.user = user;
+	/**
+	 * Not sure if this constructor is needed for anything
+	 * @param client
+	 */
+	public GUIController(MockClient client) {
+		this.client = client;
+		openLoginWindow();
 	}
 	
-	public void setClient(User user) {
-		this.user = user;
-	}
-	
-	public void openLogin() {
-		lp = new LoginPanel();
-		lp.setController(this);
-		lp.putInFrame();
+	/**
+	 * Opens new login window
+	 */
+	private void openLoginWindow() {
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run() {
+				new LoginPanel(GUIController.this);
+			}
+		});
 	}
 
+	/**
+	 * Opens new GUI window
+	 * Change to correct GUI-window later
+	 */
 	public void openGUI() {
-		gui = new GUI(user);
-		gui.setController(this);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+			gui = new GUI(client.getUsername(), GUIController.this);
+			}
+		});
+
 	}
 	
+	
+	/**
+	 * Receives message from GUI and sends it to client
+	 * Must change parameter to Message-object, or create a message-object
+	 * @param message
+	 */
 	public void sendMessage(String message) {
 		System.out.println(message);
-		newMessage(message);
+		receiveMessage(message);
 	}
 	
-	public void newMessage(String message) {
-		gui.newMessage(user.getUsername(), message);
+	/**
+	 * Receives message from client and sends it to GUI
+	 * Must change parameter to Message-object
+	 * @param message
+	 */
+	public void receiveMessage(String message) {
+		gui.newMessage(client.getUsername(), message);
 	}
 	
-	public void changeContact(String name) {
-		
+	/**
+	 * Logout, disconnects client, disposes GUI and opens new login window
+	 */
+	public void logout() {
+		client.disconnect();
+		gui.disposeFrame();
+		openLoginWindow();
 	}
 	
-	public static void main(String[] args) {
-		GUIController guiC = new GUIController();
-		guiC.openLogin();
-	}
-
-	public void testInit() {
+	/**
+	 * Login-function. Receives users input username and creates a new MockUser-object.
+	 * Connects to server.
+	 * Opens GUI-window.
+	 * @param username String received from Login-textfield
+	 */
+	public void login(String username) {
+		Map<String, String> addresses = new HashMap<>();
+		addresses.put("local", "localhost");
 		
-		User user1 = new User("Dwight Schrute");
-		User user2 = new User("Stanley");
-		User user3 = new User("Michael Scott");
+		MockUser user = new MockUser(username, null);
+		client = new MockClient(user, addresses.get("local"), 12345);
 		
-		Message message1 = new Message(user, user1, "Test1");
-		Message message2 = new Message(user, user2, "Test2");
-		Message message3 = new Message(user, user3, "Test3");
-		
-		user1.setLatestMessage(message1);
-		user2.setLatestMessage(message2);
-		user3.setLatestMessage(message3);
-		
-		user.addContact(user1);
-		user.addContact(user2);
-		user.addContact(user3);
+		openGUI();
 	}
 }

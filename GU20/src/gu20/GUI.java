@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -33,28 +34,29 @@ import sources.User;
 
 public class GUI extends JPanel {
 	
-	private User user;
+	private JFrame frame;
+	
+//	private User user;
 	
 	private GUIController controller;
 	
-	private JPanel titlePanel;
+	private TitlePanel titlePanel;
 	private JPanel contactPanel;
 	private MessagePanel messagePanel;
 
-	public GUI() {
-		this(new User("Test Testsson"));
+	public GUI(GUIController guiC) {
+		this("Test Testsson", guiC);
 	}
-	public GUI(User user) {
+	public GUI(String username, GUIController guiC) {
+		this.controller = guiC;
+		
 		this.setPreferredSize(new Dimension(700, 300));
 		setLayout(new BorderLayout());
 		
-		this.user = user;
-		
-		titlePanel = new TitlePanel(user.getUsername()); //Test username
+		titlePanel = new TitlePanel(username); //Test username
 		add(titlePanel, BorderLayout.NORTH);
 		
-		contactPanel = new ContactPanel(contactTest()); //Test contacts
-//		contactPanel = new ContactPanel(null);
+		contactPanel = new UsersPanel(null); //Test contacts
 		add(contactPanel, BorderLayout.WEST);
 		
 		messagePanel = new MessagePanel(messagesTest());
@@ -74,12 +76,16 @@ public class GUI extends JPanel {
 	}
 
 	private void putInFrame() {
-		JFrame window = new JFrame("Chatt Window");
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		window.add(this);
-		window.pack();
-		window.setLocationRelativeTo(null);
-		window.setVisible(true);
+		frame = new JFrame("Chatt Window");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(this);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+	}
+	
+	public void disposeFrame() {
+		frame.dispose();
 	}
 	
 	/**
@@ -108,6 +114,10 @@ public class GUI extends JPanel {
 			
 			setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		}
+		
+		public String getUsername() {
+			return lblUser.getText();
+		}
 	}
 	
 	/**
@@ -115,17 +125,200 @@ public class GUI extends JPanel {
 	 * @author Alexander Libot
 	 *
 	 */
-	private class ContactPanel extends JPanel {
+	private class UsersPanel extends JPanel {
 		
 		
-		public ContactPanel(ArrayList<Contact> contacts) {
+		public UsersPanel(ArrayList<ContactTest> contacts) {
 			
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.black, 1));
 			
-			add(new PreviewPanel(contacts), BorderLayout.CENTER);
-			add(new ContactButtonPanel(), BorderLayout.SOUTH);
+			JPanel tempPanel = new JPanel();
+			ContactButtonPanel buttonsPanel = new ContactButtonPanel();
+			
+			tempPanel.setLayout(new BoxLayout(tempPanel,BoxLayout.Y_AXIS));
+			tempPanel.add(new ContactPanel(null, buttonsPanel));
+			tempPanel.add(new OnlinePanel(null, buttonsPanel));
+			
+			add(tempPanel, BorderLayout.CENTER);
+			add(buttonsPanel, BorderLayout.SOUTH);
 		}
+	}
+	
+	private class ContactPanel extends JPanel implements MouseListener {
+
+		private JLabel header;
+		private JPanel contactList;
+		private ArrayList<ContactTest> contacts;
+		private ContactButtonPanel buttonsPanel;
+		
+		public ContactPanel(ArrayList<ContactTest> contacts, ContactButtonPanel buttonsPanel) {
+			this.contacts = contacts;
+			this.buttonsPanel = buttonsPanel;
+			setLayout(new BorderLayout());
+			setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			
+			contactList = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            contactList.add(new JPanel(), gbc);
+			
+            add(new JScrollPane(contactList), BorderLayout.CENTER);
+			
+            try {
+			for (ContactTest contact : this.contacts) {
+	            GridBagConstraints gbc2 = new GridBagConstraints();
+	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
+	            gbc2.weightx = 1;
+	            gbc2.fill = GridBagConstraints.HORIZONTAL;
+				contactList.add(contact, gbc2, 0);
+				contact.addMouseListener(this);
+			}
+            } catch (NullPointerException ex) {}
+            
+            Font headerFont = new Font("Helvetica", Font.BOLD, 14);
+            header = new JLabel("Contacts");
+            header.setFont(headerFont);
+            add(header, BorderLayout.NORTH);
+
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			JLabel selectedLabel = (JLabel) e.getSource();
+			
+			
+			for (ContactTest contact : contacts) {
+				contact.setBackground(null);
+				contact.setBorder(null);
+			}
+			
+			selectedLabel.setBackground(Color.GREEN);
+			selectedLabel.setBorder(BorderFactory.createLoweredBevelBorder());
+
+			
+			buttonsPanel.setAddButtonText("Remove contact");
+			
+		}
+
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
+	
+	private class OnlinePanel extends JPanel implements MouseListener {
+		
+		private JLabel header;
+		private JPanel contactList;
+		private ArrayList<ContactTest> contacts;
+		
+		private ContactButtonPanel buttonsPanel;
+		
+		public OnlinePanel(ArrayList<ContactTest> contacts, ContactButtonPanel buttonsPanel) {
+			this.contacts = contacts;
+			this.buttonsPanel = buttonsPanel;
+			setLayout(new BorderLayout());
+			setBorder(BorderFactory.createLineBorder(Color.BLACK));
+			
+			contactList = new JPanel(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.weightx = 1;
+            gbc.weighty = 1;
+            contactList.add(new JPanel(), gbc);
+			
+            add(new JScrollPane(contactList), BorderLayout.CENTER);
+			
+            try {
+			for (ContactTest contact : this.contacts) {
+	            GridBagConstraints gbc2 = new GridBagConstraints();
+	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
+	            gbc2.weightx = 1;
+	            gbc2.fill = GridBagConstraints.HORIZONTAL;
+				contactList.add(contact, gbc2, 0);
+				contact.addMouseListener(this);
+				
+			}
+            } catch (NullPointerException ex) {}
+            
+            Font headerFont = new Font("Helvetica", Font.BOLD, 14);
+            header = new JLabel("Online");
+            header.setFont(headerFont);
+            add(header, BorderLayout.NORTH);
+
+		}
+
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			JLabel selectedLabel = (JLabel) e.getSource();
+			
+			
+			for (ContactTest contact : contacts) {
+				contact.setBackground(null);
+				contact.setBorder(null);
+			}
+			
+			selectedLabel.setBackground(Color.YELLOW);
+			selectedLabel.setBorder(BorderFactory.createLoweredBevelBorder());
+
+			
+			buttonsPanel.setAddButtonText("Add contact");
+			
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		
 	}
 	
 	private class PreviewPanel extends JPanel implements MouseListener {
@@ -178,8 +371,6 @@ public class GUI extends JPanel {
 			JPanel clickedPanel = (Contact) e.getSource();	
 			clickedPanel.setBorder(BorderFactory.createLoweredBevelBorder());
 			
-			controller.changeContact(clickedPanel.getName());
-			
 		}
 
 		@Override
@@ -201,19 +392,58 @@ public class GUI extends JPanel {
 		}
 	}
 	
-	private class ContactButtonPanel extends JPanel {
-		private JButton btnNewChat;
+	private class ContactButtonPanel extends JPanel implements ActionListener {
+		private JButton btnAddContact;
 		private JButton btnLogout;
 		
 		public ContactButtonPanel() {
-			btnNewChat = new JButton("New Chat");
+			btnAddContact = new JButton("Add contact");
 			btnLogout = new JButton("Logout");
+			btnLogout.addActionListener(this);
 			
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			add(Box.createHorizontalGlue());
-			add(btnNewChat);
+			add(btnAddContact);
 			add(btnLogout);
 			add(Box.createHorizontalGlue());
+		}
+		
+		public void disableAddButton() {
+			btnAddContact.setEnabled(false);
+		}
+		
+		public void enableAddButton() {
+			btnAddContact.setEnabled(true);
+		}
+		
+		public void setAddButtonText(String text) {
+			btnAddContact.setText(text);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource().equals(btnLogout))
+				controller.logout();
+				
+				
+		}
+	}
+	
+	private class ContactTest extends JLabel {
+		
+		private boolean contact;
+		
+		public ContactTest(String username) {
+			setText(username);
+			contact = false;
+		}
+		
+		public void addContact() {
+			contact = true;
+		}
+		
+		public void removeContact() {
+			contact = false;
 		}
 	}
 	
@@ -373,7 +603,7 @@ public class GUI extends JPanel {
 			pnlMessage.add(lblMessage);
 			
 			pnlSender.setAlignmentX(Component.LEFT_ALIGNMENT);
-			if (sender.equals(user.getUsername()))
+			if (sender.equals(titlePanel.getUsername()))
 				pnlSender.setBackground(Color.RED);
 			else
 				pnlSender.setBackground(Color.BLUE);
@@ -402,48 +632,51 @@ public class GUI extends JPanel {
 //		return testContacts;
 //	}
 	
-	private ArrayList<Contact> contactTest() {
-		User tempUser;
-		sources.Message tempMessage;
-		Calendar tempDate;
-		
-		tempUser = user.getContacts().get(0);
-		tempMessage = tempUser.getLatestMessage();
-		tempDate = tempMessage.getDate();
-		Contact contact1 = new Contact(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
-		
-		tempUser = user.getContacts().get(1);
-		tempMessage = tempUser.getLatestMessage();
-		tempDate = tempMessage.getDate();
-		Contact contact2 = new Contact(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
-		
-		tempUser = user.getContacts().get(2);
-		tempMessage = tempUser.getLatestMessage();
-		tempDate = tempMessage.getDate();
-		Contact contact3 = new Contact(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
-		
-		ArrayList<Contact> testContacts = new ArrayList<Contact>();
-		testContacts.add(contact1);
-		testContacts.add(contact2);
-		testContacts.add(contact3);
-		return testContacts;
-	}
+//	private ArrayList<ContactTest> contactTest() {
+//		User tempUser;
+//		sources.Message tempMessage;
+//		Calendar tempDate;
+//		
+//		tempUser = user.getContacts().get(0);
+//		tempMessage = tempUser.getLatestMessage();
+//		tempDate = tempMessage.getDate();
+////		ContactTest contact1 = new ContactTest(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
+//		ContactTest contact1 = new ContactTest(tempUser.getUsername());
+//				
+//		tempUser = user.getContacts().get(1);
+//		tempMessage = tempUser.getLatestMessage();
+//		tempDate = tempMessage.getDate();
+////		ContactTest contact2 = new ContactTest(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
+//		ContactTest contact2 = new ContactTest(tempUser.getUsername());
+//		
+//		tempUser = user.getContacts().get(2);
+//		tempMessage = tempUser.getLatestMessage();
+//		tempDate = tempMessage.getDate();
+////		ContactTest contact3 = new ContactTest(tempUser.getUsername(), tempMessage.getMessage(), formatDate(tempDate));
+//		ContactTest contact3 = new ContactTest(tempUser.getUsername());
+//		
+//		ArrayList<ContactTest> testContacts = new ArrayList<ContactTest>();
+//		testContacts.add(contact1);
+//		testContacts.add(contact2);
+//		testContacts.add(contact3);
+//		return testContacts;
+//	}
 	
-	private String formatDate(Calendar date) {
-		String strDate, strCurrentDate;
-		
-		DateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd");
-		
-		Calendar currentDate = Calendar.getInstance();
-
-		strDate = formatDate.format(date.getTime());
-		strCurrentDate = formatDate.format(currentDate.getTime());
-		
-		if (strDate.equals(strCurrentDate))
-			return "Today";
-		
-		return strDate;
-	}
+//	private String formatDate(Calendar date) {
+//		String strDate, strCurrentDate;
+//		
+//		DateFormat formatDate = new SimpleDateFormat("yyyy/MM/dd");
+//		
+//		Calendar currentDate = Calendar.getInstance();
+//
+//		strDate = formatDate.format(date.getTime());
+//		strCurrentDate = formatDate.format(currentDate.getTime());
+//		
+//		if (strDate.equals(strCurrentDate))
+//			return "Today";
+//		
+//		return strDate;
+//	}
 	
 	private ArrayList<Message> messagesTest() {
 		Message message1 = new Message("Jim Halpert", "What kind of bear is best");

@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+import gu20.GUIController;
 import gu20.Helpers;
 import gu20.MockUser;
 
