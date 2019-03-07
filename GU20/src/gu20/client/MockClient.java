@@ -102,7 +102,7 @@ public class MockClient implements Runnable {
 		obj = inputStream.readObject();
 		
 		MockUser[] users = (MockUser[]) obj;
-		System.out.println("Got users: " + Helpers.joinArray(users, ", "));
+		System.out.println(user + " got users: " + Helpers.joinArray(users, ", "));
 	}
 	
 	private void handleMessage() throws ClassNotFoundException, IOException {
@@ -110,27 +110,6 @@ public class MockClient implements Runnable {
 		Message message = (Message) obj;
 		System.out.println(user + " recieved message from: " + message.getSender() + " : " + message.getText());
 	}
-	
-	private void listenForUpdate() throws IOException, ClassNotFoundException {
-		if (inputStream.available() <= 0) {
-			return;
-		}
-
-		String header = inputStream.readUTF();
-		
-		if (header.equals("UPDATE")) {
-			Object obj = inputStream.readObject();
-			MockUser user = (MockUser) obj;
-			String action = inputStream.readUTF();
-			
-			obj = inputStream.readObject();
-			MockUser[] users = (MockUser[]) obj;
-			System.out.println(user + " " + action.toLowerCase());
-			System.out.println("Connected users: " + Helpers.joinArray(users, ", "));
-			System.out.println();
-		}
-	}
-	
 	
 	public void disconnect() {
 		if (socket.isClosed()) {
