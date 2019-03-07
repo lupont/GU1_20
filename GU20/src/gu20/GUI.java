@@ -274,9 +274,6 @@ public class GUI extends JPanel {
 				inputPanel.toggleSendButton(false);
 			else
 				inputPanel.toggleSendButton(true);
-				
-//            final List<String> selectedValuesList = onlineList.getSelectedValuesList();
-//            selectedUser = selectedValuesList.get(index)
 		}
 	}
 	
@@ -548,6 +545,9 @@ public class GUI extends JPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			String message = tfInput.getText();
+			
+			if (selectedUser == null)
+				return;
 			
 			controller.sendMessage(message, selectedUser);
 		}

@@ -12,6 +12,5 @@ public class TestSystem {
 		
 		new GUIController();
 		new GUIController();
-		new GUIController();
 	}
 }

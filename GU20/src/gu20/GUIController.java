@@ -67,6 +67,7 @@ public class GUIController {
 			onlineUsers = users;
 		else {
 			gui.getOnelinePanel().addOnlineUsers(users);
+			onlineUsers = users;
 		}
 	}
 
