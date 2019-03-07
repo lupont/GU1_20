@@ -83,14 +83,18 @@ public class MockClient implements Runnable {
 			return;
 		}
 
-		System.out.println("Reading");
 		String header = inputStream.readUTF();
-		System.out.println("Read: " + header);
 		
 		if (header.equals("UPDATE")) {
 			Object obj = inputStream.readObject();
+			MockUser user = (MockUser) obj;
+			String action = inputStream.readUTF();
+			
+			obj = inputStream.readObject();
 			MockUser[] users = (MockUser[]) obj;
-			System.out.println("Got users: " + Helpers.joinArray(users, ", "));
+			System.out.println(user + " " + action.toLowerCase());
+			System.out.println("Connected users: " + Helpers.joinArray(users, ", "));
+			System.out.println();
 		}
 	}
 	
@@ -112,7 +116,7 @@ public class MockClient implements Runnable {
 			try { 
 				if (socket != null) {
 					socket.close(); 
-					System.out.println("Disconnected from the server.");
+					System.out.println(user + " disconnected from the server.");
 				}
 			}
 			catch (IOException ex) {}

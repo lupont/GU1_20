@@ -15,6 +15,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.ImageIcon;
+
 import gu20.MockUser;
 import gu20.Clients;
 import gu20.Helpers;
@@ -65,7 +67,7 @@ public class Server implements Runnable {
 		}	
 	}
 	
-	private void updateUserList() {
+	private void updateUserList(MockUser user, String action) {
 		new Thread(new Runnable() {
 			public synchronized void run() {
 				MockUser[] connectedUsers = Helpers.getConnectedUsers(clients);
@@ -76,6 +78,8 @@ public class Server implements Runnable {
 						try {
 							os = listener.getOutputStream();
 							os.writeUTF("UPDATE");
+							os.writeObject(user);
+							os.writeUTF(action);
 							os.writeObject(connectedUsers);
 							System.out.println(listener.getUser() == null ? "Server sent update, but user had not been set." : "Server sent update to " + listener.getUser());
 							System.out.println(Helpers.joinArray(connectedUsers, ", "));
@@ -135,7 +139,7 @@ public class Server implements Runnable {
 						System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") connected to the server.");
 						Helpers.printClients(clients);
 						
-						updateUserList();
+						updateUserList(user, "CONNECTED");
 					}
 				}
 				
@@ -152,7 +156,7 @@ public class Server implements Runnable {
 							System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") disconnected from the server.");
 							Helpers.printClients(clients);
 							
-							updateUserList();
+							updateUserList(user, "DISCONNECTED");
 							
 							interrupt();
 							return;

@@ -35,6 +35,9 @@ public class MockUser implements Serializable {
 	
 	@Override
 	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof MockUser)) {
+			return false;
+		}
 		return username.equals(((MockUser) obj).getUsername());
 	}
 	
