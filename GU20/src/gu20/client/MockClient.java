@@ -97,6 +97,10 @@ public class MockClient implements Runnable {
 	
 	private void handleUpdate() throws IOException, ClassNotFoundException {
 		Object obj = inputStream.readObject();
+		MockUser user = (MockUser) obj;
+		String action = inputStream.readUTF();
+		obj = inputStream.readObject();
+		
 		MockUser[] users = (MockUser[]) obj;
 		System.out.println("Got users: " + Helpers.joinArray(users, ", "));
 	}
@@ -105,6 +109,8 @@ public class MockClient implements Runnable {
 		Object obj = inputStream.readObject();
 		Message message = (Message) obj;
 		System.out.println(user + " recieved message from: " + message.getSender() + " : " + message.getText());
+	}
+	
 	private void listenForUpdate() throws IOException, ClassNotFoundException {
 		if (inputStream.available() <= 0) {
 			return;
