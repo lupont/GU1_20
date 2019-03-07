@@ -21,10 +21,14 @@ public class GUIController {
 	
 	private GUI gui;
 	
+	private Map<String, String> addresses = new HashMap<>();
+	
 	/**
 	 * Creates new GUIController and opens new login window
 	 */
 	public GUIController() {
+		addresses.put("local", "localhost");
+		addresses.put("atlex-server", "192.168.1.100");
 		openLoginWindow();
 	}
 	
@@ -43,14 +47,15 @@ public class GUIController {
 	private void openLoginWindow() {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run() {
-				new LoginPanel(GUIController.this);
+				new LoginPanel(GUIController.this, addresses);
+//				new LoginPanel(GUIController.this);
 			}
 		});
 	}
 
 	/**
-	 * Opens new GUI window
-	 * Change to correct GUI-window later
+	 * Opens new GUI window.
+	 * Change to correct GUI-window later.
 	 */
 	private void openGUI() {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -59,7 +64,6 @@ public class GUIController {
 			gui.getOnelinePanel().addOnlineUsers(onlineUsers);
 			}
 		});
-
 	}
 	
 	public void onlineUsers(MockUser[] users) {
@@ -70,6 +74,10 @@ public class GUIController {
 			onlineUsers = users;
 		}
 	}
+	
+	public void addUserToContacts() {
+		//TODO Ability to add user to contacts
+	}
 
 	/**
 	 * Receives message from GUI and sends it to client
@@ -77,6 +85,8 @@ public class GUIController {
 	 * @param message
 	 */
 	public void sendMessage(String strMessage, String recipientUsername) {
+		//TODO Handle more than one recipient
+		//TODO Ability to send picture
 		MockUser receiver = null;
 		for (MockUser user : onlineUsers) {
 			if (user.getUsername().equals(recipientUsername))
@@ -94,12 +104,12 @@ public class GUIController {
 	 * @param message
 	 */
 	public void receiveMessage(Message message) {
+		//TODO Ability to receive picture
 		gui.viewNewMessage(message.getSender().getUsername(), message.getText());
-//		gui.viewNewMessage(client.getUsername(), message);
 	}
 	
 	/**
-	 * Logout, disconnects client, disposes GUI and opens new login window
+	 * Logout, disconnects client and opens new login window
 	 */
 	public void logout() {
 		client.disconnect();
@@ -107,20 +117,25 @@ public class GUIController {
 	}
 	
 	/**
-	 * Login-function. Receives users input username and creates a new MockUser-object.
+	 * Login-function. Receives users username from textfield and creates a new MockUser-object.
 	 * Connects to server.
 	 * Opens GUI-window.
 	 * @param username String received from Login-textfield
 	 */
-	public void login(String username) {
-		Map<String, String> addresses = new HashMap<>();
-		addresses.put("local", "localhost");
+	public void login(String username, String host) {
+		
+//		Map<String, String> addresses = new HashMap<>();
+//		addresses.put("local", "localhost");
+//		addresses.put("atlex-server", "192.168.1.100");
 		
 		user = new MockUser(username, null);
-		client = new MockClient(user, addresses.get("local"), 12345);
+		client = new MockClient(user, addresses.get(host), 12345);
 		client.setGUIController(this);
 		
 		openGUI();
-		
+	}
+	
+	public void addProfilePicture() {
+		//TODO Ability to add profile picture
 	}
 }

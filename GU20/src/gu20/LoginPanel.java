@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.*;
 
@@ -14,11 +16,16 @@ public class LoginPanel {
 	private JFrame frame;
 	
 	private JTextField tfUserField;
+	
+	private JComboBox<String> cbHosts;
+	
+	private Map<String, String> addresses;
 
 	
-	
-	public LoginPanel(GUIController guiC) {
+	public LoginPanel(GUIController guiC, Map<String, String> addresses) {
+//	public 	LoginPanel(GUIController guiC) {
 		this.guiC = guiC;
+		this.addresses = addresses;
 
 		putInFrame(initPanel());
 	}
@@ -42,13 +49,28 @@ public class LoginPanel {
 		tfUserField.setText("Enter username");
 		tfUserField.addActionListener(new LoginListener());
 		
-		panel.setPreferredSize(new Dimension(200,100));
+		
+		Set<String> set = addresses.keySet();
+		String[] cbStrings = new String[set.size()];
+		int index = 0;
+		
+		for (String key : set) {
+			cbStrings[index++] = key;
+		}
+		
+		cbHosts = new JComboBox<String>(cbStrings);
+		try {
+			cbHosts.setSelectedItem("local");
+		} catch (Exception ex) {}
+		
+		panel.setPreferredSize(new Dimension(200,150));
 		
 		panel.add(lblTitle);
 		panel.add(Box.createVerticalGlue());
 		panel.add(tfUserField);
 		panel.add(Box.createVerticalGlue());
 		panel.add(btnLogin);
+		panel.add(cbHosts);
 		
 		return panel;
 	}
@@ -72,7 +94,7 @@ public class LoginPanel {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			disposeFrame();
-			guiC.login(tfUserField.getText());
+			guiC.login(tfUserField.getText(), (String) cbHosts.getSelectedItem());
 		}	
 	}
 }

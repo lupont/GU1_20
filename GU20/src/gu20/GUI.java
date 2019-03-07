@@ -12,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -25,12 +24,11 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * A mock for how gui might be implemented, user for testing GUIController
+ * A mock for how the GUI might be implemented, used for testing GUIController
  * @author Alexander Libot
  *
  */
@@ -63,10 +61,10 @@ public class GUI extends JPanel {
 		this.setPreferredSize(new Dimension(700, 300));
 		setLayout(new BorderLayout());
 		
-		titlePanel = new TitlePanel(username); //Test username
+		titlePanel = new TitlePanel(username);
 		add(titlePanel, BorderLayout.NORTH);
 		
-		contactPanel = new UsersPanel(null); //Test contacts
+		contactPanel = new UsersPanel();
 		add(contactPanel, BorderLayout.WEST);
 		
 		messagePanel = new MessagePanel();
@@ -89,17 +87,12 @@ public class GUI extends JPanel {
 		frame.setVisible(true);
 	}
 	
-	private void disposeFrame() {
-		frame.dispose();
-	}
-	
 	/**
 	 * Title panel to be displayed on top of page.
 	 * Contains program title and username.
 	 * @author Alexander Libot
 	 *
 	 */
-	@SuppressWarnings("serial")
 	private class TitlePanel extends JPanel {
 		private JLabel lblTitle;
 		private JLabel lblUser;
@@ -110,7 +103,7 @@ public class GUI extends JPanel {
 		 */
 		public TitlePanel(String username) {
 			lblTitle = new JLabel("Chat Program");
-			lblUser = new JLabel(username);
+			lblUser = new JLabel("User:" + username);
 			
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			add(lblTitle);
@@ -133,7 +126,7 @@ public class GUI extends JPanel {
 	private class UsersPanel extends JPanel {
 		
 		
-		public UsersPanel(ArrayList<ContactTest> contacts) {
+		public UsersPanel() {
 			
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.black, 1));
@@ -142,7 +135,7 @@ public class GUI extends JPanel {
 			ContactButtonPanel buttonsPanel = new ContactButtonPanel();
 			
 			tempPanel.setLayout(new BoxLayout(tempPanel,BoxLayout.Y_AXIS));
-			tempPanel.add(new ContactPanel(null, buttonsPanel));
+			tempPanel.add(new ContactPanel(buttonsPanel));
 			
 			onlinePanel = new OnlinePanel(buttonsPanel);
 			tempPanel.add(onlinePanel);
@@ -156,11 +149,9 @@ public class GUI extends JPanel {
 
 		private JLabel header;
 		private JPanel contactList;
-		private ArrayList<ContactTest> contacts;
 		private ContactButtonPanel buttonsPanel;
 		
-		public ContactPanel(ArrayList<ContactTest> contacts, ContactButtonPanel buttonsPanel) {
-			this.contacts = contacts;
+		public ContactPanel(ContactButtonPanel buttonsPanel) {
 			this.buttonsPanel = buttonsPanel;
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -173,18 +164,7 @@ public class GUI extends JPanel {
             contactList.add(new JPanel(), gbc);
 			
             add(new JScrollPane(contactList), BorderLayout.CENTER);
-			
-            try {
-			for (ContactTest contact : this.contacts) {
-	            GridBagConstraints gbc2 = new GridBagConstraints();
-	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
-	            gbc2.weightx = 1;
-	            gbc2.fill = GridBagConstraints.HORIZONTAL;
-				contactList.add(contact, gbc2, 0);
-				contact.addMouseListener(this);
-			}
-            } catch (NullPointerException ex) {}
-            
+
             Font headerFont = new Font("Helvetica", Font.BOLD, 14);
             header = new JLabel("Contacts");
             header.setFont(headerFont);
@@ -205,10 +185,10 @@ public class GUI extends JPanel {
 			JLabel selectedLabel = (JLabel) e.getSource();
 			
 			
-			for (ContactTest contact : contacts) {
-				contact.setBackground(null);
-				contact.setBorder(null);
-			}
+//			for (ContactTest contact : contacts) {
+//				contact.setBackground(null);
+//				contact.setBorder(null);
+//			}
 			
 			selectedLabel.setBackground(Color.GREEN);
 			selectedLabel.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -228,18 +208,11 @@ public class GUI extends JPanel {
 	class OnlinePanel extends JPanel implements ListSelectionListener {
 		
 		private JLabel header;
-		private JPanel contactList;
-		private ArrayList<JLabel> contacts = new ArrayList<JLabel>();
-		
+
 		private DefaultListModel<String> listModel;
 		private JList<String> onlineList;
-		
-		private ContactButtonPanel buttonsPanel;
-		
-		private GridBagConstraints gbc = new GridBagConstraints();
-		
+
 		public OnlinePanel(ContactButtonPanel buttonsPanel) {
-			this.buttonsPanel = buttonsPanel;
 			
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -277,80 +250,6 @@ public class GUI extends JPanel {
 		}
 	}
 	
-	/*
-	 * Legacy
-	 */
-	private class PreviewPanel extends JPanel implements MouseListener {
-		private JPanel contactList;
-		private ArrayList<Contact> contacts;
-		
-		public PreviewPanel(ArrayList<Contact> contacts) {
-			this.contacts = contacts;
-			setLayout(new BorderLayout());
-			
-			contactList = new JPanel(new GridBagLayout());
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.weightx = 1;
-            gbc.weighty = 1;
-            contactList.add(new JPanel(), gbc);
-			
-            add(new JScrollPane(contactList));
-			
-            try {
-			for (Contact contact : this.contacts) {
-	            GridBagConstraints gbc2 = new GridBagConstraints();
-	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
-	            gbc2.weightx = 1;
-	            gbc2.fill = GridBagConstraints.HORIZONTAL;
-				contactList.add(contact, gbc2, 0);
-				
-				contact.addMouseListener(this);
-			}
-            } catch (NullPointerException ex) {}
-		}
-		
-		public void defaultContacts() {
-			for (Contact contact : this.contacts) {
-				contact.setBackground(null);
-				contact.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			}
-			updateUI();
-		}
-
-		@Override
-		public void mouseClicked(MouseEvent e) {
-
-		}
-
-		@Override
-		public void mousePressed(MouseEvent e) {
-			defaultContacts();
-			
-			JPanel clickedPanel = (Contact) e.getSource();	
-			clickedPanel.setBorder(BorderFactory.createLoweredBevelBorder());
-			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-	}
-	
 	private class ContactButtonPanel extends JPanel implements ActionListener {
 		private JButton btnAddContact;
 		private JButton btnLogout;
@@ -384,98 +283,12 @@ public class GUI extends JPanel {
 			if (e.getSource().equals(btnLogout)) {
 				controller.logout();
 				frame.dispose();
-			}
-				
-				
-		}
-	}
-	
-	/*
-	 * Legacy
-	 */
-	private class ContactTest extends JLabel {
-		
-		private boolean contact;
-		
-		public ContactTest(String username) {
-			setText(username);
-			contact = false;
-		}
-		
-		public void addContact() {
-			contact = true;
-		}
-		
-		public void removeContact() {
-			contact = false;
-		}
-	}
-	
-	/*
-	 * Legacy
-	 */
-	private class Contact extends JPanel {
-		private JLabel lblName;
-		private JLabel lblLatestMessage;
-		private JLabel lblTime;
-		
-		private JPanel pnlContactHead;
-		
-		public Contact(String name, String latestMessage, String time) {
-			lblName = new JLabel(name);
-			lblLatestMessage = new JLabel(formatPreview(latestMessage));
-			lblTime = new JLabel(time);
-			
-			pnlContactHead = new JPanel();
-			pnlContactHead.setLayout(new BoxLayout(pnlContactHead, BoxLayout.X_AXIS));
-			pnlContactHead.add(lblName);
-			pnlContactHead.add(Box.createHorizontalGlue());
-			pnlContactHead.add(lblTime);
-			
-			setLayout(new BorderLayout());
-			add(pnlContactHead, BorderLayout.NORTH);
-			add(lblLatestMessage, BorderLayout.CENTER);	
-			
-			setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			
-			setMaximumSize(new Dimension(200, 100));
-		}
-		
-		public String getName() {
-			return lblName.getText();
-		}
-		
-		/**
-		 * Formats an input string to have right amount of characters per row and number of rows
-		 * @param inputString
-		 * @return
-		 */
-		private String formatPreview(String inputString) {
-			char[] inputChars = inputString.toCharArray();
-			StringBuilder sb = new StringBuilder();
-			String outputString = null;
-			
-			sb.append("<html>");
-			
-			for (int i = 0; i < inputString.length(); i++) {
-				if (i < 25)
-					sb.append(inputChars[i]);
-				else if (i == 25) {
-					sb.append("<br>");
-				}
-				else if (i > 25)
-					sb.append(inputChars[i-1]);
-			}
-			sb.append("</html>");
-			outputString = sb.toString();
-			return outputString;
+			}	
 		}
 	}
 	
 	private class MessagePanel extends JPanel {
-		
-//		private MessagesPanel messagesPanel;
-		
+
 		public MessagePanel() {
 			setLayout(new BorderLayout());
 			
@@ -485,10 +298,6 @@ public class GUI extends JPanel {
 			add(messagesPanel, BorderLayout.CENTER);
 			add(inputPanel, BorderLayout.SOUTH);
 		}
-		
-//		public void addMessage(String sender, String message) {
-//			messagesPanel.addMessage(message);
-//		}
 	}
 	
 	private class MessagesPanel extends JPanel {
@@ -507,14 +316,6 @@ public class GUI extends JPanel {
 			
             add(new JScrollPane(messageList));
 			
-			
-//			for (Message message : this.messages) {
-//	            GridBagConstraints gbc2 = new GridBagConstraints();
-//	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
-//	            gbc2.weightx = 1;
-//	            gbc2.fill = GridBagConstraints.HORIZONTAL;
-//				messageList.add(message, gbc2, -1);
-//			}
 		}
 		
 		public void addMessage(String sender, String text) {

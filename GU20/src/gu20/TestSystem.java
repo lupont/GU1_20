@@ -1,9 +1,5 @@
 package gu20;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import gu20.client.MockClient;
 import gu20.server.RunServer;
 
 public class TestSystem {
