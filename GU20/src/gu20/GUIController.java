@@ -1,6 +1,5 @@
 package gu20;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +17,7 @@ public class GUIController {
 	
 	private MockClient client;
 	private MockUser[] onlineUsers;
+	private MockUser user;
 	
 	private GUI gui;
 	
@@ -52,7 +52,7 @@ public class GUIController {
 	 * Opens new GUI window
 	 * Change to correct GUI-window later
 	 */
-	public void openGUI() {
+	private void openGUI() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 			gui = new GUI(client.getUsername(), GUIController.this);
@@ -66,56 +66,24 @@ public class GUIController {
 		if (onlineUsers == null)
 			onlineUsers = users;
 		else {
-//			onlineUsers = newUsers(users);
 			gui.getOnelinePanel().addOnlineUsers(users);
 		}
 	}
-			
-//	private MockUser[] newUsers(MockUser[] users) {
-//		ArrayList<MockUser> newUsersList = new ArrayList<MockUser>();
-//		for (MockUser user : users) {
-//			if (!containsUser(user))
-//				newUsersList.add(user);
-//		}
-//		
-//		MockUser[] newUsers = new MockUser[newUsersList.size()];
-//		for (int index = 0; index < newUsersList.size(); index++) {
-//			newUsers[index] = newUsersList.get(index);
-//		}
-//		
-//		MockUser[] temp = new MockUser[newUsers.length + users.length];
-//		
-//		for (int index = 0; index < users.length; index++) {
-//			temp[index] = users[index];
-//			temp[index+users.length-1] = newUsers[index];
-//		}
-//		
-//		return temp;
-//		
-//		
-//	}
-	
-	/**
-	 * Checks if a users is already in online list
-	 * @param user The user to compare
-	 * @return true if user is in online list, false if not
-	 */
-	private boolean containsUser(MockUser user) {
-		for (MockUser onlineUser : onlineUsers) {
-			if (user.getUsername().equals(onlineUser.getUsername()))
-				return true;
-		}
-		return false;
-	}
 
-	
 	/**
 	 * Receives message from GUI and sends it to client
 	 * Must change parameter to Message-object, or create a message-object
 	 * @param message
 	 */
-	public void sendMessage(String message) {
-		System.out.println(message);
+	public void sendMessage(String strMessage, String recipientUsername) {
+		MockUser receiver = null;
+		for (MockUser user : onlineUsers) {
+			if (user.getUsername().equals(recipientUsername))
+				receiver = user;
+		}
+		
+		Message message = new Message(user, receiver, strMessage);
+		client.sendMessage(message);
 		receiveMessage(message);
 	}
 	
@@ -124,8 +92,9 @@ public class GUIController {
 	 * Must change parameter to Message-object
 	 * @param message
 	 */
-	public void receiveMessage(String message) {
-		gui.newMessage(client.getUsername(), message);
+	public void receiveMessage(Message message) {
+		gui.viewNewMessage(message.getSender().getUsername(), message.getText());
+//		gui.viewNewMessage(client.getUsername(), message);
 	}
 	
 	/**
@@ -133,7 +102,6 @@ public class GUIController {
 	 */
 	public void logout() {
 		client.disconnect();
-		gui.disposeFrame();
 		openLoginWindow();
 	}
 	
@@ -147,7 +115,7 @@ public class GUIController {
 		Map<String, String> addresses = new HashMap<>();
 		addresses.put("local", "localhost");
 		
-		MockUser user = new MockUser(username, null);
+		user = new MockUser(username, null);
 		client = new MockClient(user, addresses.get("local"), 12345);
 		client.setGUIController(this);
 		

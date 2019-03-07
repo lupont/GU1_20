@@ -113,6 +113,7 @@ public class MockClient implements Runnable {
 		Object obj = inputStream.readObject();
 		Message message = (Message) obj;
 		System.out.println(user + " recieved message from: " + message.getSender() + " : " + message.getText());
+		guiC.receiveMessage(message);
 	}
 	
 	public void disconnect() {
