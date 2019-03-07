@@ -11,11 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -27,26 +23,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
-import sources.Message;
-import sources.User;
-
-
-
+@SuppressWarnings("serial")
 public class GUI extends JPanel {
 	
 	private JFrame frame;
-	
-//	private User user;
 	
 	private GUIController controller;
 	
 	private TitlePanel titlePanel;
 	private JPanel contactPanel;
 	private MessagePanel messagePanel;
+	private OnlinePanel onlinePanel;
 
 	public GUI(GUIController guiC) {
 		this("Test Testsson", guiC);
 	}
+	
 	public GUI(String username, GUIController guiC) {
 		this.controller = guiC;
 		
@@ -138,7 +130,9 @@ public class GUI extends JPanel {
 			
 			tempPanel.setLayout(new BoxLayout(tempPanel,BoxLayout.Y_AXIS));
 			tempPanel.add(new ContactPanel(null, buttonsPanel));
-			tempPanel.add(new OnlinePanel(null, buttonsPanel));
+			
+			onlinePanel = new OnlinePanel(buttonsPanel);
+			tempPanel.add(onlinePanel);
 			
 			add(tempPanel, BorderLayout.CENTER);
 			add(buttonsPanel, BorderLayout.SOUTH);
@@ -186,17 +180,11 @@ public class GUI extends JPanel {
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void mouseClicked(MouseEvent e) {}
 
 
 		@Override
-		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
+		public void mousePressed(MouseEvent e) {}
 
 
 		@Override
@@ -214,65 +202,67 @@ public class GUI extends JPanel {
 
 			
 			buttonsPanel.setAddButtonText("Remove contact");
-			
 		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {}
 
 
 		@Override
-		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-		
+		public void mouseExited(MouseEvent e) {}
 	}
 	
-	private class OnlinePanel extends JPanel implements MouseListener {
+	class OnlinePanel extends JPanel implements MouseListener {
 		
 		private JLabel header;
 		private JPanel contactList;
-		private ArrayList<ContactTest> contacts;
+		private ArrayList<JLabel> contacts = new ArrayList<JLabel>();
 		
 		private ContactButtonPanel buttonsPanel;
 		
-		public OnlinePanel(ArrayList<ContactTest> contacts, ContactButtonPanel buttonsPanel) {
-			this.contacts = contacts;
+		private GridBagConstraints gbc = new GridBagConstraints();
+		
+		public OnlinePanel(ContactButtonPanel buttonsPanel) {
 			this.buttonsPanel = buttonsPanel;
+			
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			
 			contactList = new JPanel(new GridBagLayout());
-			GridBagConstraints gbc = new GridBagConstraints();
+			
 			gbc.gridwidth = GridBagConstraints.REMAINDER;
             gbc.weightx = 1;
             gbc.weighty = 1;
             contactList.add(new JPanel(), gbc);
 			
             add(new JScrollPane(contactList), BorderLayout.CENTER);
-			
-            try {
-			for (ContactTest contact : this.contacts) {
-	            GridBagConstraints gbc2 = new GridBagConstraints();
-	            gbc2.gridwidth = GridBagConstraints.REMAINDER;
-	            gbc2.weightx = 1;
-	            gbc2.fill = GridBagConstraints.HORIZONTAL;
-				contactList.add(contact, gbc2, 0);
-				contact.addMouseListener(this);
-				
-			}
-            } catch (NullPointerException ex) {}
             
             Font headerFont = new Font("Helvetica", Font.BOLD, 14);
             header = new JLabel("Online");
             header.setFont(headerFont);
             add(header, BorderLayout.NORTH);
+		}
+		
+		public void addOnlineUsers(MockUser[] users) {
+			contactList.removeAll();
+			contactList.add(new JPanel(), gbc);
+			
+			for (MockUser user : users)
+				addOnlineUser(user);
 
+			updateUI();
+		}
+		
+		private void addOnlineUser(MockUser user) {
+			JLabel lblUser = new JLabel(user.getUsername());
+			contacts.add(lblUser);
+			
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridwidth = GridBagConstraints.REMAINDER;
+            gbc.weightx = 1;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+			contactList.add(new JLabel(user.getUsername()), gbc, 0);
+			lblUser.addMouseListener(this);
 		}
 
 
@@ -293,7 +283,7 @@ public class GUI extends JPanel {
 			JLabel selectedLabel = (JLabel) e.getSource();
 			
 			
-			for (ContactTest contact : contacts) {
+			for (JLabel contact : contacts) {
 				contact.setBackground(null);
 				contact.setBorder(null);
 			}
@@ -583,6 +573,10 @@ public class GUI extends JPanel {
 			controller.sendMessage(message);
 			
 		}
+	}
+	
+	public OnlinePanel getOnelinePanel() {
+		return onlinePanel;
 	}
 	
 	private class Message extends JPanel {

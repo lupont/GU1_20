@@ -1,5 +1,6 @@
 package gu20;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,19 +9,17 @@ import javax.swing.SwingUtilities;
 import gu20.client.MockClient;
 
 /**
- * Control-class for communication between GUI and server/client
+ * Control-class for communication between GUI and client
  * 
  * @author Alexander Libot
  *
  */
 public class GUIController {
 	
-//	private User user;
-	
 	private MockClient client;
+	private MockUser[] onlineUsers;
 	
 	private GUI gui;
-//	private LoginPanel lp;
 	
 	/**
 	 * Creates new GUIController and opens new login window
@@ -57,11 +56,58 @@ public class GUIController {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 			gui = new GUI(client.getUsername(), GUIController.this);
+			gui.getOnelinePanel().addOnlineUsers(onlineUsers);
 			}
 		});
 
 	}
 	
+	public void onlineUsers(MockUser[] users) {
+		if (onlineUsers == null)
+			onlineUsers = users;
+		else {
+//			onlineUsers = newUsers(users);
+			gui.getOnelinePanel().addOnlineUsers(users);
+		}
+	}
+			
+//	private MockUser[] newUsers(MockUser[] users) {
+//		ArrayList<MockUser> newUsersList = new ArrayList<MockUser>();
+//		for (MockUser user : users) {
+//			if (!containsUser(user))
+//				newUsersList.add(user);
+//		}
+//		
+//		MockUser[] newUsers = new MockUser[newUsersList.size()];
+//		for (int index = 0; index < newUsersList.size(); index++) {
+//			newUsers[index] = newUsersList.get(index);
+//		}
+//		
+//		MockUser[] temp = new MockUser[newUsers.length + users.length];
+//		
+//		for (int index = 0; index < users.length; index++) {
+//			temp[index] = users[index];
+//			temp[index+users.length-1] = newUsers[index];
+//		}
+//		
+//		return temp;
+//		
+//		
+//	}
+	
+	/**
+	 * Checks if a users is already in online list
+	 * @param user The user to compare
+	 * @return true if user is in online list, false if not
+	 */
+	private boolean containsUser(MockUser user) {
+		for (MockUser onlineUser : onlineUsers) {
+			if (user.getUsername().equals(onlineUser.getUsername()))
+				return true;
+		}
+		return false;
+	}
+
 	
 	/**
 	 * Receives message from GUI and sends it to client
@@ -103,7 +149,9 @@ public class GUIController {
 		
 		MockUser user = new MockUser(username, null);
 		client = new MockClient(user, addresses.get("local"), 12345);
+		client.setGUIController(this);
 		
 		openGUI();
+		
 	}
 }
