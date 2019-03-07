@@ -27,6 +27,12 @@ public class Message implements Serializable {
 	
 	public String getText() { return text; }
 	
+	public MockUser getSender() { return sender; }
+	
+	public MockUser[] getRecipients() {
+		return recipients;
+	}
+	
 	/**
 	 * Should be called by the server when the server has received a message from a user.
 	 * @param date The date and time at which the server received the message.
