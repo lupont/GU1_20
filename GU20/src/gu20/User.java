@@ -12,7 +12,6 @@ public class User implements Serializable{
 	public User(String username, ImageIcon profilePic) {
 		this.profilePic = profilePic;
 		this.username = username;
-		
 	}
 	
 	public String getUsername() {
