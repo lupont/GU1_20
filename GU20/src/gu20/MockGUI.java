@@ -33,11 +33,9 @@ import javax.swing.event.ListSelectionListener;
  *
  */
 @SuppressWarnings("serial")
-public class GUI extends JPanel {
+public class MockGUI extends JPanel implements GUIInterface {
 	
 	private JFrame frame;
-	
-	private GUIController controller;
 	
 	private TitlePanel titlePanel;
 	private JPanel contactPanel;
@@ -48,13 +46,14 @@ public class GUI extends JPanel {
 	private OnlinePanel onlinePanel;
 	
 	private String username;
+	private GUIController controller;
 	private String selectedUser;
 
-	public GUI(GUIController guiC) {
+	public MockGUI(GUIController guiC) {
 		this("Test Testsson", guiC);
 	}
 	
-	public GUI(String username, GUIController guiC) {
+	public MockGUI(String username, GUIController guiC) {
 		this.username = username;
 		this.controller = guiC;
 		
@@ -73,9 +72,13 @@ public class GUI extends JPanel {
 		putInFrame();
 	}
 	
-	public void viewNewMessage(String sender, String message) {
+	public void viewNewMessage(MockUser sender, String message) {
 		messagesPanel.addMessage(sender, message);
 		updateUI();
+	}
+	
+	public void addOnlineUsers(MockUser[] onlineUsers) {
+		onlinePanel.addOnlineUsers(onlineUsers);
 	}
 
 	private void putInFrame() {
@@ -183,12 +186,6 @@ public class GUI extends JPanel {
 		@Override
 		public void mouseReleased(MouseEvent e) {
 			JLabel selectedLabel = (JLabel) e.getSource();
-			
-			
-//			for (ContactTest contact : contacts) {
-//				contact.setBackground(null);
-//				contact.setBorder(null);
-//			}
 			
 			selectedLabel.setBackground(Color.GREEN);
 			selectedLabel.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -318,7 +315,7 @@ public class GUI extends JPanel {
 			
 		}
 		
-		public void addMessage(String sender, String text) {
+		public void addMessage(MockUser sender, String text) {
 			Message message = new Message(sender, text);
 			messages.add(message);
 			
@@ -359,10 +356,6 @@ public class GUI extends JPanel {
 		
 	}
 	
-	public OnlinePanel getOnelinePanel() {
-		return onlinePanel;
-	}
-	
 	private class Message extends JPanel {
 		private JLabel lblSender;
 		private JLabel lblMessage;
@@ -370,8 +363,8 @@ public class GUI extends JPanel {
 		private JPanel pnlSender;
 		private JPanel pnlMessage;
 		
-		public Message(String sender, String message) {
-			lblSender = new JLabel(sender);
+		public Message(MockUser sender, String message) {
+			lblSender = new JLabel(sender.getUsername());
 			lblMessage = new JLabel(message);
 			
 			pnlSender = new JPanel();
@@ -381,7 +374,7 @@ public class GUI extends JPanel {
 			pnlMessage.add(lblMessage);
 			
 			pnlSender.setAlignmentX(Component.LEFT_ALIGNMENT);
-			if (sender.equals(titlePanel.getUsername()))
+			if (sender.getUsername().equals(username))
 				pnlSender.setBackground(Color.RED);
 			else
 				pnlSender.setBackground(Color.BLUE);

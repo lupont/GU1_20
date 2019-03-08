@@ -19,7 +19,7 @@ public class GUIController {
 	private MockUser[] onlineUsers;
 	private MockUser user;
 	
-	private GUI gui;
+	private GUIInterface gui;
 	
 	private Map<String, String> addresses = new HashMap<>();
 	
@@ -30,6 +30,7 @@ public class GUIController {
 		addresses.put("local", "localhost");
 		addresses.put("atlex-server", "192.168.1.100");
 		openLoginWindow();
+
 	}
 	
 	/**
@@ -60,19 +61,20 @@ public class GUIController {
 	private void openGUI() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-			gui = new GUI(client.getUsername(), GUIController.this);
-			gui.getOnelinePanel().addOnlineUsers(onlineUsers);
+			gui = new MockGUI(client.getUsername(), GUIController.this);
+			gui.addOnlineUsers(onlineUsers);
 			}
 		});
 	}
 	
 	public void onlineUsers(MockUser[] users) {
-		if (onlineUsers == null)
-			onlineUsers = users;
-		else {
-			gui.getOnelinePanel().addOnlineUsers(users);
-			onlineUsers = users;
-		}
+		
+		onlineUsers = users;
+		
+		if (gui != null)
+			gui.addOnlineUsers(onlineUsers);
+		
+		
 	}
 	
 	public void addUserToContacts() {
@@ -105,7 +107,7 @@ public class GUIController {
 	 */
 	public void receiveMessage(Message message) {
 		//TODO Ability to receive picture
-		gui.viewNewMessage(message.getSender().getUsername(), message.getText());
+		gui.viewNewMessage(message.getSender(), message.getText());
 	}
 	
 	/**
