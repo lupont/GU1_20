@@ -23,11 +23,19 @@ public class LoginPanel {
 
 	
 	public LoginPanel(GUIController guiC, Map<String, String> addresses) {
-//	public 	LoginPanel(GUIController guiC) {
 		this.guiC = guiC;
 		this.addresses = addresses;
 
 		putInFrame(initPanel());
+	}
+	
+	/*
+	 * Test constructor, let you login without open login-gui.
+	 * To be removed later.
+	 */
+	public LoginPanel(GUIController guiC, String username, String address) {
+		this.guiC = guiC;
+		guiC.login(username, address);
 	}
 	
 	/**

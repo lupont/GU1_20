@@ -9,8 +9,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -38,12 +36,10 @@ public class MockGUI extends JPanel implements GUIInterface {
 	private JFrame frame;
 	
 	private TitlePanel titlePanel;
-	private JPanel contactPanel;
+	private UsersPanel usersPanel;
 	private MessagePanel messagePanel;
 	private MessagesPanel messagesPanel;
 	private InputPanel inputPanel;
-	
-	private OnlinePanel onlinePanel;
 	
 	private String username;
 	private GUIController controller;
@@ -57,19 +53,32 @@ public class MockGUI extends JPanel implements GUIInterface {
 		this.username = username;
 		this.controller = guiC;
 		
+		initGUI();
+	}
+	
+	private void initGUI() {
 		this.setPreferredSize(new Dimension(700, 300));
 		setLayout(new BorderLayout());
 		
 		titlePanel = new TitlePanel(username);
 		add(titlePanel, BorderLayout.NORTH);
 		
-		contactPanel = new UsersPanel();
-		add(contactPanel, BorderLayout.WEST);
+		usersPanel = new UsersPanel();
+		add(usersPanel, BorderLayout.WEST);
 		
 		messagePanel = new MessagePanel();
 		add(messagePanel, BorderLayout.CENTER);
 		
 		putInFrame();
+	}
+	
+	private void putInFrame() {
+		frame = new JFrame("Chatt Window");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.add(this);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
 	}
 	
 	public void viewNewMessage(MockUser sender, String message) {
@@ -78,16 +87,11 @@ public class MockGUI extends JPanel implements GUIInterface {
 	}
 	
 	public void addOnlineUsers(MockUser[] onlineUsers) {
-		onlinePanel.addOnlineUsers(onlineUsers);
+		usersPanel.addOnlineUsers(onlineUsers);
 	}
 
-	private void putInFrame() {
-		frame = new JFrame("Chatt Window");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.add(this);
-		frame.pack();
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
+	public void addContact(MockUser contact) {
+		usersPanel.addContact(contact);
 	}
 	
 	/**
@@ -115,10 +119,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 			
 			setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 		}
-		
-		public String getUsername() {
-			return lblUser.getText();
-		}
 	}
 	
 	/**
@@ -128,101 +128,101 @@ public class MockGUI extends JPanel implements GUIInterface {
 	 */
 	private class UsersPanel extends JPanel {
 		
+		private ContactPanel contactPanel;
+		private OnlinePanel onlinePanel;
+		private ContactButtonPanel buttonsPanel;
+		
 		
 		public UsersPanel() {
 			
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.black, 1));
 			
-			JPanel tempPanel = new JPanel();
-			ContactButtonPanel buttonsPanel = new ContactButtonPanel();
+			buttonsPanel = new ContactButtonPanel();
+			contactPanel = new ContactPanel("Contacts", buttonsPanel);
+			onlinePanel = new OnlinePanel("Online", buttonsPanel);
 			
-			tempPanel.setLayout(new BoxLayout(tempPanel,BoxLayout.Y_AXIS));
-			tempPanel.add(new ContactPanel(buttonsPanel));
+			JPanel sidePanel = new JPanel();
 			
-			onlinePanel = new OnlinePanel(buttonsPanel);
-			tempPanel.add(onlinePanel);
+			sidePanel.setLayout(new BoxLayout(sidePanel,BoxLayout.Y_AXIS));
+			sidePanel.add(contactPanel);	
+			sidePanel.add(onlinePanel);
 			
-			add(tempPanel, BorderLayout.CENTER);
+			add(sidePanel, BorderLayout.CENTER);
 			add(buttonsPanel, BorderLayout.SOUTH);
 		}
+		
+		public void addContact(MockUser contact) {
+			contactPanel.addContact(contact);
+		}
+		
+		public void addOnlineUsers(MockUser[] onlineUsers) {
+			onlinePanel.addOnlineUsers(onlineUsers);
+		}
+		
+		public void deselectAll(String list) {
+			if (list.equals("online"))
+				onlinePanel.deselectAll();
+			else if (list.equals("contacts"))
+				contactPanel.deselectAll();
+		}
 	}
 	
-	private class ContactPanel extends JPanel implements MouseListener {
+	private abstract class AbstractUserPanel extends JPanel implements ListSelectionListener {
+		JLabel header;
 
-		private JLabel header;
-		private JPanel contactList;
-		private ContactButtonPanel buttonsPanel;
+		DefaultListModel<String> listModel;
+		JList<String> userList;
 		
-		public ContactPanel(ContactButtonPanel buttonsPanel) {
-			this.buttonsPanel = buttonsPanel;
+		ContactButtonPanel buttonsPanel;
+		
+		public AbstractUserPanel(String header, ContactButtonPanel buttonsPanel) {
+			
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createLineBorder(Color.BLACK));
 			
-			contactList = new JPanel(new GridBagLayout());
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridwidth = GridBagConstraints.REMAINDER;
-            gbc.weightx = 1;
-            gbc.weighty = 1;
-            contactList.add(new JPanel(), gbc);
+			Font headerFont = new Font("Helvetica", Font.BOLD, 14);
+			this.header = new JLabel(header);
+            this.header.setFont(headerFont);
+            add(this.header, BorderLayout.NORTH);
+            
+			listModel = new DefaultListModel<>();
+			userList = new JList<>(listModel);   
+			userList.addListSelectionListener(this);
+			add(userList, BorderLayout.CENTER);
 			
-            add(new JScrollPane(contactList), BorderLayout.CENTER);
-
-            Font headerFont = new Font("Helvetica", Font.BOLD, 14);
-            header = new JLabel("Contacts");
-            header.setFont(headerFont);
-            add(header, BorderLayout.NORTH);
-
+			this.buttonsPanel = buttonsPanel;
+		}
+		
+		public void deselectAll() {
+			userList.clearSelection();
+		}
+	}
+	
+	private class ContactPanel extends AbstractUserPanel {
+		
+		public ContactPanel(String header, ContactButtonPanel buttonsPanel) {
+			super(header, buttonsPanel);
+		}
+		
+		public void addContact(MockUser contact) {
+			listModel.addElement(contact.getUsername());
+			updateUI();
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e) {}
-
-
-		@Override
-		public void mousePressed(MouseEvent e) {}
-
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			JLabel selectedLabel = (JLabel) e.getSource();
-			
-			selectedLabel.setBackground(Color.GREEN);
-			selectedLabel.setBorder(BorderFactory.createLoweredBevelBorder());
-
+		public void valueChanged(ListSelectionEvent e) {
+			usersPanel.deselectAll("online");
 			
 			buttonsPanel.setAddButtonText("Remove contact");
+			
 		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {}
-
-
-		@Override
-		public void mouseExited(MouseEvent e) {}
 	}
 	
-	class OnlinePanel extends JPanel implements ListSelectionListener {
+	class OnlinePanel extends AbstractUserPanel {
 		
-		private JLabel header;
-
-		private DefaultListModel<String> listModel;
-		private JList<String> onlineList;
-
-		public OnlinePanel(ContactButtonPanel buttonsPanel) {
-			
-			setLayout(new BorderLayout());
-			setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			
-			listModel = new DefaultListModel<>();
-			onlineList = new JList<>(listModel);   
-			onlineList.addListSelectionListener(this);
-			add(onlineList, BorderLayout.CENTER);
-			
-            Font headerFont = new Font("Helvetica", Font.BOLD, 14);
-            header = new JLabel("Online");
-            header.setFont(headerFont);
-            add(header, BorderLayout.NORTH);
+		public OnlinePanel(String header, ContactButtonPanel buttonsPanel) {
+			super(header, buttonsPanel);
 		}
 		
 		public void addOnlineUsers(MockUser[] users) {
@@ -239,11 +239,9 @@ public class MockGUI extends JPanel implements GUIInterface {
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			selectedUser = onlineList.getSelectedValue();
-			if (selectedUser == null)
-				inputPanel.toggleSendButton(false);
-			else
-				inputPanel.toggleSendButton(true);
+			selectedUser = userList.getSelectedValue();
+			usersPanel.deselectAll("contacts");
+			buttonsPanel.setAddButtonText("Add contact");
 		}
 	}
 	
@@ -253,6 +251,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 		
 		public ContactButtonPanel() {
 			btnAddContact = new JButton("Add contact");
+			btnAddContact.addActionListener(this);
 			btnLogout = new JButton("Logout");
 			btnLogout.addActionListener(this);
 			
@@ -261,14 +260,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 			add(btnAddContact);
 			add(btnLogout);
 			add(Box.createHorizontalGlue());
-		}
-		
-		public void disableAddButton() {
-			btnAddContact.setEnabled(false);
-		}
-		
-		public void enableAddButton() {
-			btnAddContact.setEnabled(true);
 		}
 		
 		public void setAddButtonText(String text) {
@@ -280,7 +271,11 @@ public class MockGUI extends JPanel implements GUIInterface {
 			if (e.getSource().equals(btnLogout)) {
 				controller.logout();
 				frame.dispose();
-			}	
+			} else if (e.getSource().equals(btnAddContact)) {
+				if (selectedUser != null)
+					System.out.println(("Trying to add contact"));
+					controller.addUserToContacts(selectedUser);
+			}
 		}
 	}
 	
@@ -339,6 +334,8 @@ public class MockGUI extends JPanel implements GUIInterface {
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			add(tfInput);
 			add(btnSend);
+			
+			toggleSendButton(false);
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -353,7 +350,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 		public void toggleSendButton(boolean toggle) {
 			btnSend.setEnabled(toggle);
 		}
-		
 	}
 	
 	private class Message extends JPanel {

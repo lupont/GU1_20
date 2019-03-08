@@ -30,7 +30,6 @@ public class GUIController {
 		addresses.put("local", "localhost");
 		addresses.put("atlex-server", "192.168.1.100");
 		openLoginWindow();
-
 	}
 	
 	/**
@@ -42,6 +41,13 @@ public class GUIController {
 		openLoginWindow();
 	}
 	
+	/*
+	 * TODO Used for testing, skips login-window
+	 */
+	public GUIController(String username, String address) {
+		new LoginPanel(this, username, address);
+	}
+	
 	/**
 	 * Opens new login window
 	 */
@@ -49,7 +55,6 @@ public class GUIController {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run() {
 				new LoginPanel(GUIController.this, addresses);
-//				new LoginPanel(GUIController.this);
 			}
 		});
 	}
@@ -61,8 +66,9 @@ public class GUIController {
 	private void openGUI() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-			gui = new MockGUI(client.getUsername(), GUIController.this);
-			gui.addOnlineUsers(onlineUsers);
+				gui = new MockGUI(client.getUsername(), GUIController.this);
+
+				gui.addOnlineUsers(onlineUsers);
 			}
 		});
 	}
@@ -77,8 +83,14 @@ public class GUIController {
 		
 	}
 	
-	public void addUserToContacts() {
-		//TODO Ability to add user to contacts
+	public void addUserToContacts(String username) {
+		//TODO Send contact to client
+		for (MockUser user : onlineUsers) {
+			if (user.getUsername().equals(username)) {
+				gui.addContact(user);
+				return;
+			}
+		}
 	}
 
 	/**
@@ -125,11 +137,6 @@ public class GUIController {
 	 * @param username String received from Login-textfield
 	 */
 	public void login(String username, String host) {
-		
-//		Map<String, String> addresses = new HashMap<>();
-//		addresses.put("local", "localhost");
-//		addresses.put("atlex-server", "192.168.1.100");
-		
 		user = new MockUser(username, null);
 		client = new MockClient(user, addresses.get(host), 12345);
 		client.setGUIController(this);

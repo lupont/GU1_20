@@ -6,7 +6,7 @@ public class TestSystem {
 	public static void main(String[] args) {
 		RunServer.main(args);
 		
-		new GUIController();
-		new GUIController();
+		new GUIController("alex", "localhost");
+		new GUIController("pontus", "localhost");
 	}
 }

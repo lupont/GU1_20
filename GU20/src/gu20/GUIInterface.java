@@ -6,4 +6,6 @@ public interface GUIInterface {
 	
 	public void viewNewMessage(MockUser sender, String text);
 	
+	public void addContact(MockUser contact);
+	
 }
