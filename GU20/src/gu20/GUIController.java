@@ -42,7 +42,7 @@ public class GUIController {
 	}
 	
 	/*
-	 * TODO Used for testing, skips login-window
+	 * TODO Used for testing, skips login-window, to be removed.
 	 */
 	public GUIController(String username, String address) {
 		new LoginPanel(this, username, address);
@@ -83,6 +83,7 @@ public class GUIController {
 		
 	}
 	
+	//TODO Preventing from adding a user more than once to contacts
 	public void addUserToContacts(String username) {
 		//TODO Send contact to client
 		for (MockUser user : onlineUsers) {
@@ -91,6 +92,11 @@ public class GUIController {
 				return;
 			}
 		}
+	}
+	
+	//TODO Remove users from contact list
+	public void removeUserFromContacts(String username) {
+		
 	}
 
 	/**
@@ -134,6 +140,7 @@ public class GUIController {
 	 * Login-function. Receives users username from textfield and creates a new MockUser-object.
 	 * Connects to server.
 	 * Opens GUI-window.
+	 * TODO Check if username is already taken, and if unsent messages need to be imported
 	 * @param username String received from Login-textfield
 	 */
 	public void login(String username, String host) {

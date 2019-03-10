@@ -88,10 +88,17 @@ public class MockGUI extends JPanel implements GUIInterface {
 	
 	public void addOnlineUsers(MockUser[] onlineUsers) {
 		usersPanel.addOnlineUsers(onlineUsers);
+		updateUI();
 	}
 
 	public void addContact(MockUser contact) {
 		usersPanel.addContact(contact);
+		updateUI();
+	}
+	
+	//TODO
+	public void removeContact(MockUser contact) {
+		
 	}
 	
 	/**
@@ -207,7 +214,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 		
 		public void addContact(MockUser contact) {
 			listModel.addElement(contact.getUsername());
-			updateUI();
 		}
 
 		@Override
@@ -233,8 +239,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 				if (!user.getUsername().equals(username))
 					listModel.addElement(user.getUsername());
 			}
-			
-			updateUI();
 		}
 
 		@Override
@@ -242,6 +246,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 			selectedUser = userList.getSelectedValue();
 			usersPanel.deselectAll("contacts");
 			buttonsPanel.setAddButtonText("Add contact");
+			inputPanel.toggleSendButton(true);
 		}
 	}
 	

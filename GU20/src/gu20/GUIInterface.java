@@ -8,4 +8,6 @@ public interface GUIInterface {
 	
 	public void addContact(MockUser contact);
 	
+	public void removeContact(MockUser contact);
+	
 }
