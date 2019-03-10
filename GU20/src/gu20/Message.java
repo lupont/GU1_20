@@ -25,6 +25,13 @@ public class Message implements Serializable {
 		this.image = image;
 	}
 	
+	/*
+	 * Constructor for testing, to be removed later
+	 */
+	public Message(MockUser sender, MockUser receiver, String text) {
+		this(sender, new MockUser[]{receiver}, text, null);
+	}
+	
 	public String getText() { return text; }
 	
 	public MockUser getSender() { return sender; }

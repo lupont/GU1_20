@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+import gu20.GUIController;
 import gu20.Helpers;
 import gu20.Message;
 import gu20.MockUser;
@@ -21,6 +22,8 @@ public class MockClient implements Runnable {
 	private static final String LOGGER_PATH = "logs/" + MockClient.class.getName() + ".log";
 	
 	private MockUser user;
+	
+	private GUIController guiC;
 
 	private String ip;
 	private int port;
@@ -88,7 +91,7 @@ public class MockClient implements Runnable {
 				}
 			}
 			catch (IOException ex) {
-				System.out.println("io exception mockclient");
+//				System.out.println("io exception mockclient");
 				continue;
 			}
 			catch (ClassNotFoundException ex) {}
@@ -103,12 +106,14 @@ public class MockClient implements Runnable {
 		
 		MockUser[] users = (MockUser[]) obj;
 		System.out.println(user + " got users: " + Helpers.joinArray(users, ", "));
+		guiC.onlineUsers(users);
 	}
 	
 	private void handleMessage() throws ClassNotFoundException, IOException {
 		Object obj = inputStream.readObject();
 		Message message = (Message) obj;
 		System.out.println(user + " recieved message from: " + message.getSender() + " : " + message.getText());
+		guiC.receiveMessage(message);
 	}
 	
 	public void disconnect() {
@@ -145,5 +150,9 @@ public class MockClient implements Runnable {
 		catch (IOException e) {
 			System.out.println("Exception send message (client)");
 		}
+	}
+	
+	public void setGUIController(GUIController guiC) {
+		this.guiC = guiC;
 	}
 }

@@ -109,7 +109,10 @@ public class Server implements Runnable {
 							} 
 							catch (IOException e) {
 								System.out.println(e);
+							} catch (NullPointerException e) {
+								System.out.println(e);
 							}
+							
 						}
 						// TODO: Add message to unsent queue
 					}
