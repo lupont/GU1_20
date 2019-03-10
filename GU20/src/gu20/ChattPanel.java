@@ -45,7 +45,7 @@ public class ChattPanel extends JPanel implements ActionListener {
 	public static void main(String[] args) {
 		JFrame window = new JFrame("Chatt Window");
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		window.add(new MockGUI());
+//		window.add(new MockGUI());
 		window.pack();
 		window.setVisible(true);
 	}
