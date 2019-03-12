@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import gu20.GUIController;
 import gu20.Helpers;
 
 public class MockServerPanel extends JPanel {
@@ -29,10 +30,10 @@ public class MockServerPanel extends JPanel {
 		}
 		catch (Exception ex) {}
 		
-		JButton button = new JButton("Send message");
+		JButton button = new JButton("Add client");
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
-//				server.mockMessageSending();
+				new GUIController();
 			}
 		});
 		add(button, BorderLayout.SOUTH);

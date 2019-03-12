@@ -1,6 +1,7 @@
 package gu20;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.SwingUtilities;
@@ -125,7 +126,18 @@ public class GUIController {
 	 */
 	public void receiveMessage(Message message) {
 		//TODO Ability to receive picture
-		gui.viewNewMessage(message.getSender(), message.getText());
+		SwingUtilities.invokeLater(() -> {
+			System.out.println(this.user + " received message from " + message.getSender());
+			gui.viewNewMessage(message.getSender(), message.getText());			
+		});
+	}
+	
+	public void receiveMessages(List<Message> messages) {
+		SwingUtilities.invokeLater(() -> {
+			for (Message message : messages) {
+				gui.viewNewMessage(message.getSender(), message.getText());
+			}
+		});
 	}
 	
 	/**

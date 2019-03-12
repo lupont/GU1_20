@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 
 import gu20.MockUser;
+import gu20.UnsentMessages;
 import gu20.Clients;
 import gu20.Helpers;
 import gu20.Message;
@@ -27,6 +28,7 @@ public class Server implements Runnable {
 	public static final String LOGGER_PATH = "logs/" + Server.class.getName() + ".log";
 	
 	private Clients clients;
+	private UnsentMessages unsentMessages;
 	
 	private ServerSocket serverSocket;
 	
@@ -38,6 +40,7 @@ public class Server implements Runnable {
 		
 		clients = new Clients();
 		clientListeners = new ArrayList<>();
+		unsentMessages = new UnsentMessages();
 		
 		try {
 			this.serverSocket = new ServerSocket(port);
@@ -94,32 +97,57 @@ public class Server implements Runnable {
 	}
 	
 	private void sendMessage(Message message) {
-		new Thread(new Runnable() {
-			public synchronized void run() {
-				ObjectOutputStream os;
-				for (MockUser recipient : message.getRecipients()) {
-					for (ClientListener listener : clientListeners) {
-						if (listener.getUser().getUsername().equals(recipient.getUsername())) {
-							os = listener.getOutputStream();
+		new Thread(() -> {
+			ObjectOutputStream os;
+			for (MockUser recipient : message.getRecipients()) {
+				for (ClientListener listener : clientListeners) {
+					if (listener.getUser().getUsername().equals(recipient.getUsername())) {
+						os = listener.getOutputStream();
+						
+						if (!listener.getSocket().isClosed()) {
 							try {
 								os.writeUTF("MESSAGE");
-								os.writeObject(message);
+								ArrayList<Message> messages = new ArrayList<>();
+								messages.add(message);
+								os.writeObject(messages);
 								os.flush();
 								System.out.println(message.getSender() + " Sent message to recipients: " + recipient);
 							} 
 							catch (IOException e) {
 								System.out.println(e);
-							} catch (NullPointerException e) {
+							} 
+							catch (NullPointerException e) {
 								System.out.println(e);
-							}
-							
+							} 
 						}
-						// TODO: Add message to unsent queue
-					}
-				}
-				
+						else {
+							// TODO: Add message to unsent queue
+							System.out.println(listener.getUser().getUsername() + " socket is closed"); 
+							unsentMessages.put(listener.getUser(), message);
+						}
+					}	
+				}	
 			}
 		}).start();
+	}
+	
+	private void handleUnsentMessages(ClientListener listener) {
+		try {
+			ObjectOutputStream os = listener.getOutputStream();
+			ArrayList<Message> messages = unsentMessages.remove(listener.getUser());
+			
+			if (messages != null && messages.size() > 0) {
+				os.writeUTF("MESSAGE");
+				
+				os.writeObject(messages);
+				
+				os.flush();
+				
+				System.out.println("Sent unsent messages to " + listener.getUser());
+//				unsentMessages.put(listener.getUser(), null);
+			}
+		}
+		catch (IOException ex) {}
 	}
 	
 	private class ClientListener extends Thread {
@@ -129,6 +157,10 @@ public class Server implements Runnable {
 		private ObjectInputStream inputStream;
 		
 		private MockUser user;
+		
+		public Socket getSocket() {
+			return socket;
+		}
 		
 		public ClientListener(Socket socket) {
 			this.socket = socket;
@@ -169,6 +201,7 @@ public class Server implements Runnable {
 						Helpers.printClients(clients);
 						
 						updateUserList(user, "CONNECTED");
+						handleUnsentMessages(this);
 					}
 				}
 				
@@ -186,18 +219,17 @@ public class Server implements Runnable {
 							clients.put(user, null);
 							System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") disconnected from the server.");
 							Helpers.printClients(clients);
-							
-							updateUserList(user, "DISCONNECTED");
+//							updateUserList(user, "DISCONNECTED");
 							
 							interrupt();
 							return;
 						}
 						else if(response.equals("MESSAGE")) {
 							Object obj = inputStream.readObject();
-							Message message = (Message) obj;
+							List<Message> messages = (ArrayList) obj;
 							
 							//send
-							sendMessage(message);
+							sendMessage(messages.get(0));
 	
 						}
 					}
@@ -220,6 +252,9 @@ public class Server implements Runnable {
 				try {
 					outputStream.close();
 					inputStream.close();
+//					synchronized (clientListeners) {
+//						clientListeners.remove(this);
+//					}
 				}
 				catch (IOException ex) {}
 			}

@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
+
+import javax.swing.SwingUtilities;
 
 import gu20.GUIController;
 import gu20.Helpers;
@@ -111,9 +115,9 @@ public class MockClient implements Runnable {
 	
 	private void handleMessage() throws ClassNotFoundException, IOException {
 		Object obj = inputStream.readObject();
-		Message message = (Message) obj;
-		System.out.println(user + " recieved message from: " + message.getSender() + " : " + message.getText());
-		guiC.receiveMessage(message);
+		List<Message> messages = (ArrayList) obj;
+		
+		guiC.receiveMessages(messages);
 	}
 	
 	public void disconnect() {
@@ -144,7 +148,9 @@ public class MockClient implements Runnable {
 	public void sendMessage(Message message) {
 		try {
 			outputStream.writeUTF("MESSAGE");
-			outputStream.writeObject(message);
+			ArrayList<Message> messages = new ArrayList<>();
+			messages.add(message);
+			outputStream.writeObject(messages);
 			outputStream.flush();
 		} 
 		catch (IOException e) {

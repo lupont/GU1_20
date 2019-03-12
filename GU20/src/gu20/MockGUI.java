@@ -22,6 +22,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -83,6 +84,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 	
 	public void viewNewMessage(MockUser sender, String message) {
 		messagesPanel.addMessage(sender, message);
+		System.out.println("viewNewMessage: received message from " + sender);
 		updateUI();
 	}
 	
@@ -323,7 +325,7 @@ public class MockGUI extends JPanel implements GUIInterface {
             gbc2.gridwidth = GridBagConstraints.REMAINDER;
             gbc2.weightx = 1;
             gbc2.fill = GridBagConstraints.HORIZONTAL;
-			messageList.add(message, gbc2, -1);
+			messageList.add(message, gbc2, -1);					
 		}
 	}
 	
