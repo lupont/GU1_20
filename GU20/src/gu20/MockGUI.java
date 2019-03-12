@@ -235,9 +235,11 @@ public class MockGUI extends JPanel implements GUIInterface {
 			
 			listModel.clear();
 			
-			for (MockUser user : users) {
-				if (!user.getUsername().equals(username))
-					listModel.addElement(user.getUsername());
+			if (users != null && users.length > 0) {
+				for (MockUser user : users) {
+					if (!user.getUsername().equals(username))
+						listModel.addElement(user.getUsername());
+				}
 			}
 		}
 

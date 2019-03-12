@@ -1,18 +1,27 @@
 package gu20;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -29,17 +38,55 @@ public final class Helpers {
 	 * @param path The path to the log file.
 	 */
 	public static final void addFileHandler(Logger logger, String path) {
-	    FileHandler fileHandler;  
+		FileHandler fileHandler;
 	    
 	    try {  
 	        fileHandler = new FileHandler(path, true);
+	        fileHandler.setFormatter(new LogFormatter());
 	        logger.addHandler(fileHandler);
-	        
-	        SimpleFormatter formatter = new SimpleFormatter();  
-	        fileHandler.setFormatter(formatter);  
 	    } 
 	    catch (SecurityException e) {} 
 	    catch (IOException e) {}
+	}
+	
+	public static final List<String> readFile(String filePath) {
+		try (
+			FileReader fileReader = new FileReader(filePath);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+		) {
+			String line;
+			List<String> lines = new ArrayList<>();
+			while ((line = bufferedReader.readLine()) != null) {
+				lines.add(line);
+			}
+			
+			return lines;
+		}
+		catch (IOException ex) {
+			return null;
+		}
+	}
+	
+	public static final List<String> readLogBetween(String filePath, String start, String end) {
+		try (
+			FileReader fileReader = new FileReader(filePath);
+			BufferedReader bufferedReader = new BufferedReader(fileReader);
+		) {
+			String line;
+			List<String> lines = new ArrayList<>();
+			while ((line = bufferedReader.readLine()) != null) {
+				String time = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
+				
+				if (start.compareTo(time) < 0 && end.compareTo(time) >= 0) {
+					lines.add(line);
+				}
+			}
+			
+			return lines;
+		}
+		catch (IOException ex) {
+			return null;
+		}
 	}
 	
 	/**
@@ -120,5 +167,29 @@ public final class Helpers {
 		MockUser[] ret = new MockUser[users.size()];
 		ret = users.toArray(ret);
 		return ret;
+	}
+	
+	static class LogFormatter extends Formatter {
+		// TODO: change to DateTimeFormatter.
+		private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+
+		@Override
+	    public String format(LogRecord record) {
+	        StringBuilder builder = new StringBuilder(1000);
+	        
+	        // Log the date and time in the specified format
+	        builder.append("[").append(dateFormat.format(new Date(record.getMillis()))).append("] - ");
+
+	        // Log the level
+	        builder.append("[").append(record.getLevel()).append("] ");
+
+	        // Log the info
+	        builder.append(formatMessage(record));
+
+	        // Add a new line at the end
+	        builder.append(System.lineSeparator());
+
+	        return builder.toString();
+	    }
 	}
 }

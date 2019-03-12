@@ -50,9 +50,9 @@ public class Server implements Runnable {
 	
 	@Override
 	public void run() {
-		LOGGER.log(Level.INFO, "Server is waiting for clients...");
+		LOGGER.log(Level.INFO, "Server is up and running at " + serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort() + ".");
 
-		while (true) {
+		while (!Thread.interrupted()) {
 			try {
 				Socket socket = serverSocket.accept();
 				
@@ -65,7 +65,24 @@ public class Server implements Runnable {
 			catch (IOException ex) {
 				System.out.println("IO");
 			}
-		}	
+		}
+	}
+	
+	public void close() {
+		if (server != null) {
+			synchronized (clientListeners) {
+				for (ClientListener listener : clientListeners) {
+					listener.interrupt();
+					listener = null;
+				}
+				clientListeners.clear();
+			}
+			
+			server.interrupt();
+			server = null;
+			
+			LOGGER.log(Level.INFO, "Server stopped.");
+		}
 	}
 	
 	private void updateUserList(MockUser user, String action) {
@@ -82,8 +99,6 @@ public class Server implements Runnable {
 							os.writeObject(user);
 							os.writeUTF(action);
 							os.writeObject(connectedUsers);
-							System.out.println(listener.getUser() == null ? "Server sent update, but user had not been set." : "Server sent update to " + listener.getUser());
-							System.out.println(Helpers.joinArray(connectedUsers, ", "));
 							os.flush();
 						}
 						catch (IOException ex) {}
@@ -105,19 +120,17 @@ public class Server implements Runnable {
 								os.writeUTF("MESSAGE");
 								os.writeObject(message);
 								os.flush();
-								System.out.println(message.getSender() + " Sent message to recipients: " + recipient);
 							} 
-							catch (IOException e) {
-								System.out.println(e);
-							} catch (NullPointerException e) {
-								System.out.println(e);
-							}
-							
+							catch (IOException | NullPointerException e) {} 							
 						}
 						// TODO: Add message to unsent queue
 					}
 				}
-				
+				LOGGER.log(Level.INFO, String.format(
+					"Server sent message from %s to [%s]", 
+					message.getSender().getUsername(), 
+					Helpers.joinArray(message.getRecipients(), ", ")
+				));
 			}
 		}).start();
 	}
@@ -165,14 +178,12 @@ public class Server implements Runnable {
 					if (!clients.containsKey(user) || clients.get(user) == null) {
 						clients.put(user, socket);
 						this.user = user;
-						System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") connected to the server.");
-						Helpers.printClients(clients);
-						
+						LOGGER.log(Level.INFO, String.format("%s (@%s) connected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 						updateUserList(user, "CONNECTED");
 					}
 				}
 				
-				while (true) {
+				while (!Thread.interrupted()) {
 					// If it is a DISCONNECT request...
 					try {
 						String response = inputStream.readUTF();
@@ -184,9 +195,7 @@ public class Server implements Runnable {
 							MockUser user = (MockUser) obj;
 							
 							clients.put(user, null);
-							System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") disconnected from the server.");
-							Helpers.printClients(clients);
-							
+							LOGGER.log(Level.INFO, String.format("%s (@%s) disconnected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 							updateUserList(user, "DISCONNECTED");
 							
 							interrupt();
@@ -195,27 +204,23 @@ public class Server implements Runnable {
 						else if(response.equals("MESSAGE")) {
 							Object obj = inputStream.readObject();
 							Message message = (Message) obj;
-							
-							//send
 							sendMessage(message);
-	
+							LOGGER.log(Level.INFO, String.format("Server received a message from %s.", message.getSender().getUsername()));
 						}
+						
+						Thread.sleep(500);
 					}
-					catch (EOFException ex) {
+					catch (EOFException | SocketException ex) {
 						continue;
 					}
-					catch (SocketException ex) {
-						continue;
+					catch (InterruptedException ex) {
+						break;
 					}
 				}
 			}
-			catch (EOFException ex) {
+			catch (IOException | ClassNotFoundException ex) {
 				ex.printStackTrace();
 			}
-			catch (IOException ex) {
-				ex.printStackTrace();
-			}
-			catch (ClassNotFoundException ex) {}
 			finally {
 				try {
 					outputStream.close();
