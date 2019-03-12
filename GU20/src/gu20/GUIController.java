@@ -1,6 +1,7 @@
 package gu20;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.SwingUtilities;
@@ -165,16 +166,24 @@ public class GUIController {
 	 * Must change parameter to Message-object, or create a message-object
 	 * @param message
 	 */
-	public void sendMessage(String strMessage, String recipientUsername) {
-		//TODO Handle more than one recipient
+	public void sendMessage(String strMessage, List<String> recipientUsernames) {
 		//TODO Ability to send picture
-		MockUser receiver = null;
-		for (MockUser user : onlineUsers) {
-			if (recipientUsername.equals(user.getUsername()))
-				receiver = user;
+		MockUser[] receivers = new MockUser[recipientUsernames.size()];
+		int counter = 0;
+		boolean multiRecipientMessage;
+		if (recipientUsernames.size() > 1)
+			multiRecipientMessage = true;
+		else
+			multiRecipientMessage = false;
+		
+		for (String recipientUsername : recipientUsernames) {
+			for (MockUser user : onlineUsers) {
+				if (recipientUsername.equals(user.getUsername()))
+					receivers[counter++] = user;
+			}
 		}
 		
-		Message message = new Message(user, receiver, strMessage);
+		Message message = new Message(user, receivers, strMessage, null, multiRecipientMessage);
 		client.sendMessage(message);
 		receiveMessage(message);
 	}
@@ -186,7 +195,8 @@ public class GUIController {
 	 */
 	public void receiveMessage(Message message) {
 		//TODO Ability to receive picture
-		gui.viewNewMessage(message.getSender(), message.getText());
+		
+		gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));
 	}
 	
 	/**

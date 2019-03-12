@@ -14,6 +14,8 @@ public class Message implements Serializable {
 	private String text;
 	private ImageIcon image;
 	
+	private boolean multiRecipientMessage; //Used for testing atm
+	
 	private Date serverReceived;
 	private Date recipientsReceived;
 	
@@ -25,6 +27,13 @@ public class Message implements Serializable {
 		this.image = image;
 	}
 	
+	/*
+	 * User for testing atm
+	 */
+	public Message(MockUser sender, MockUser[] recipients, String text, ImageIcon image, boolean multiRecipientMessage) {
+		this(sender, recipients, text, image);
+		this.multiRecipientMessage = multiRecipientMessage;
+	}
 	/*
 	 * Constructor for testing, to be removed later
 	 */
@@ -38,6 +47,10 @@ public class Message implements Serializable {
 	
 	public MockUser[] getRecipients() {
 		return recipients;
+	}
+	
+	public boolean isMultiRecipientMessage() {
+		return multiRecipientMessage;
 	}
 	
 	/**

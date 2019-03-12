@@ -11,6 +11,5 @@ public class TestSystem {
 		new GUIController("pontus", "localhost");
 		new GUIController("oskar", "localhost");
 		new GUIController("pärla", "localhost");
-		
 	}
 }

@@ -18,7 +18,7 @@ public interface GUIInterface {
 	 * @param sender Sender of message
 	 * @param text Text of message
 	 */
-	public void viewNewMessage(MockUser sender, String text);
+	public void viewNewMessage(MockUser sender, String text, String[] recipients);
 	
 	/**
 	 * Receive a list of contacts.
