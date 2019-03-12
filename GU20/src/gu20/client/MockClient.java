@@ -1,9 +1,15 @@
 package gu20.client;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +64,53 @@ public class MockClient implements Runnable {
 	}
 	
 	public String getUsername() { return user.getUsername(); }
+	
+	/**
+	 * Retrieves contacts from a text-file. Might be rewritten to throw exception later.
+	 * @param username Username of user whose contacts is to be retrieved.
+	 * @return Array of usernames of added contacts
+	 */
+	public String[] getContacts(String username) {
+		
+		String filename = "res/contacts/" + username + ".txt";
+		String[] contacts = null;
+		
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"))) {
+			int length = Integer.parseInt(br.readLine());
+			contacts = new String[length];
+			
+			String contact = br.readLine();
+			int index = 0;
+			while(contact != null) {
+				contacts[index++] = contact;
+				contact = br.readLine();
+			}	
+		} catch (IOException ex) {
+			//Empty catch lol
+		}	
+		return contacts;
+	}
+	
+	/**
+	 * Creates or overwrites text-file with contacts.
+	 * @param username Username of user whose contacts is to written to file
+	 * @param contacts An array of usernames of contacts to be written to file
+	 */
+	public void setContacts(String username, String[] contacts) {
+		String filename = "res/contacts/" + username + ".txt";
+		
+		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename),"UTF-8" ) )) {
+			bw.write(String.valueOf(contacts.length));
+			for (String contact : contacts) {
+				bw.newLine();
+				bw.write(contact);
+			}
+			bw.flush();
+			
+		} catch (IOException ex) {
+			//Gotta love empty catches
+		}
+	}
 	
 	private void connect() throws IOException {
 		try {

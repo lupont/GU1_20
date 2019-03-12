@@ -15,6 +15,8 @@ public class LoginPanel {
 	
 	private JFrame frame;
 	
+	JLabel lblTitle;
+	
 	private JTextField tfUserField;
 	
 	private JComboBox<String> cbHosts;
@@ -29,6 +31,11 @@ public class LoginPanel {
 		putInFrame(initPanel());
 	}
 	
+	public LoginPanel(GUIController guiC, Map<String, String> addresses, String text) {
+		this(guiC, addresses);
+		changeText(text);
+	}
+	
 	/*
 	 * Test constructor, let you login without open login-gui.
 	 * To be removed later.
@@ -36,6 +43,10 @@ public class LoginPanel {
 	public LoginPanel(GUIController guiC, String username, String address) {
 		this.guiC = guiC;
 		guiC.login(username, address);
+	}
+	
+	public void changeText(String text) {
+		lblTitle.setText(text);
 	}
 	
 	/**
@@ -46,7 +57,7 @@ public class LoginPanel {
 		JPanel panel = new JPanel();
 		
 		Font titleFont = new Font("Helvetica", Font.BOLD, 20);
-		JLabel lblTitle = new JLabel("Chat Program");
+		lblTitle = new JLabel("Chat Program");
 		lblTitle.setFont(titleFont);
 		
 		JButton btnLogin = new JButton("Login");

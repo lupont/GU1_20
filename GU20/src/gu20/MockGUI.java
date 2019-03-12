@@ -7,9 +7,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -44,7 +48,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 	
 	private String username;
 	private GUIController controller;
-	private String selectedUser;
+	private List<String> selectedUserList;
 
 	public MockGUI(GUIController guiC) {
 		this("Test Testsson", guiC);
@@ -82,25 +86,30 @@ public class MockGUI extends JPanel implements GUIInterface {
 		frame.setVisible(true);
 	}
 	
-	public void viewNewMessage(MockUser sender, String message) {
-		messagesPanel.addMessage(sender, message);
+	public void viewNewMessage(MockUser sender, String message, String[] recipients) {
+		messagesPanel.addMessage(sender, message, recipients);
 		System.out.println("viewNewMessage: received message from " + sender);
 		updateUI();
 	}
 	
-	public void addOnlineUsers(MockUser[] onlineUsers) {
+	public void addOnlineUsers(String[] onlineUsers) {
 		usersPanel.addOnlineUsers(onlineUsers);
 		updateUI();
 	}
-
-	public void addContact(MockUser contact) {
+	
+	public void addContacts(String[] contacts) {
+		usersPanel.addContacts(contacts);
+		updateUI();
+	}
+	
+	public void addContact(String contact) {
 		usersPanel.addContact(contact);
 		updateUI();
 	}
 	
-	//TODO
-	public void removeContact(MockUser contact) {
-		
+	public void removeContact(String contact) {
+		usersPanel.removeContact(contact);
+		updateUI();
 	}
 	
 	/**
@@ -113,10 +122,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 		private JLabel lblTitle;
 		private JLabel lblUser;
 		
-		/**
-		 * 
-		 * @param username Username of person logged in
-		 */
 		public TitlePanel(String username) {
 			lblTitle = new JLabel("Chat Program");
 			lblUser = new JLabel("User:" + username);
@@ -161,11 +166,19 @@ public class MockGUI extends JPanel implements GUIInterface {
 			add(buttonsPanel, BorderLayout.SOUTH);
 		}
 		
-		public void addContact(MockUser contact) {
+		public void addContacts(String[] contacts) {
+			contactPanel.addContacts(contacts);
+		}
+		
+		public void addContact(String contact) {
 			contactPanel.addContact(contact);
 		}
 		
-		public void addOnlineUsers(MockUser[] onlineUsers) {
+		public void removeContact(String contact) {
+			contactPanel.removeContact(contact);
+		}
+		
+		public void addOnlineUsers(String[] onlineUsers) {
 			onlinePanel.addOnlineUsers(onlineUsers);
 		}
 		
@@ -196,7 +209,7 @@ public class MockGUI extends JPanel implements GUIInterface {
             add(this.header, BorderLayout.NORTH);
             
 			listModel = new DefaultListModel<>();
-			userList = new JList<>(listModel);   
+			userList = new JList<>(listModel);
 			userList.addListSelectionListener(this);
 			add(userList, BorderLayout.CENTER);
 			
@@ -213,17 +226,31 @@ public class MockGUI extends JPanel implements GUIInterface {
 		public ContactPanel(String header, ContactButtonPanel buttonsPanel) {
 			super(header, buttonsPanel);
 		}
+
+		public void addContacts(String[] contacts) {
+			
+			if (contacts != null) {
+				listModel.clear();
+				for (String contact : contacts)
+					listModel.addElement(contact);
+			}
+		}
 		
-		public void addContact(MockUser contact) {
-			listModel.addElement(contact.getUsername());
+		public void addContact(String contact) {
+			listModel.addElement(contact);
+		}
+		
+		public void removeContact(String contact) {
+			listModel.removeElement(contact);
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
+//			selectedUser = userList.getSelectedValue();
+			selectedUserList = userList.getSelectedValuesList();
 			usersPanel.deselectAll("online");
-			
 			buttonsPanel.setAddButtonText("Remove contact");
-			
+			inputPanel.toggleSendButton(true);
 		}
 	}
 	
@@ -233,19 +260,22 @@ public class MockGUI extends JPanel implements GUIInterface {
 			super(header, buttonsPanel);
 		}
 		
-		public void addOnlineUsers(MockUser[] users) {
+		public void addOnlineUsers(String[] users) {
 			
 			listModel.clear();
 			
-			for (MockUser user : users) {
-				if (!user.getUsername().equals(username))
-					listModel.addElement(user.getUsername());
+			if (users != null) {
+				for (String user : users) {
+					if (!user.equals(username))
+						listModel.addElement(user);
+				}
 			}
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
-			selectedUser = userList.getSelectedValue();
+			selectedUserList = userList.getSelectedValuesList();
+//			selectedUser = userList.getSelectedValue();
 			usersPanel.deselectAll("contacts");
 			buttonsPanel.setAddButtonText("Add contact");
 			inputPanel.toggleSendButton(true);
@@ -279,9 +309,17 @@ public class MockGUI extends JPanel implements GUIInterface {
 				controller.logout();
 				frame.dispose();
 			} else if (e.getSource().equals(btnAddContact)) {
-				if (selectedUser != null)
-					System.out.println(("Trying to add contact"));
-					controller.addUserToContacts(selectedUser);
+				if (selectedUserList != null) {
+					for (String selectedUser : selectedUserList) {
+						if (btnAddContact.getText().equals("Add contact")) {
+							System.out.println("Trying to add contact");
+							controller.addUserToContacts(selectedUser);
+						} else if (btnAddContact.getText().equals("Remove contact")) {
+							System.out.println("Trying to remove contact");
+							controller.removeUserFromContacts(selectedUser);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -317,8 +355,8 @@ public class MockGUI extends JPanel implements GUIInterface {
 			
 		}
 		
-		public void addMessage(MockUser sender, String text) {
-			Message message = new Message(sender, text);
+		public void addMessage(MockUser sender, String text, String[] recipients) {
+			Message message = new Message(sender, text, recipients);
 			messages.add(message);
 			
             GridBagConstraints gbc2 = new GridBagConstraints();
@@ -348,10 +386,10 @@ public class MockGUI extends JPanel implements GUIInterface {
 		public void actionPerformed(ActionEvent e) {
 			String message = tfInput.getText();
 			
-			if (selectedUser == null)
+			if (selectedUserList == null)
 				return;
 			
-			controller.sendMessage(message, selectedUser);
+			controller.sendMessage(message, selectedUserList);
 		}
 		
 		public void toggleSendButton(boolean toggle) {
@@ -359,23 +397,38 @@ public class MockGUI extends JPanel implements GUIInterface {
 		}
 	}
 	
-	private class Message extends JPanel {
+	private class Message extends JPanel implements MouseListener {
 		private JLabel lblSender;
 		private JLabel lblMessage;
 		
 		private JPanel pnlSender;
 		private JPanel pnlMessage;
 		
-		public Message(MockUser sender, String message) {
-			lblSender = new JLabel(sender.getUsername());
-			lblMessage = new JLabel(message);
-			
+		private String[] recipients;
+		
+		private RecipientsPanel recipientsPanel;
+		
+		public Message(MockUser sender, String message, String[] recipients) {
+			this.recipients = recipients;
+
+			String strSender;
 			pnlSender = new JPanel();
-			pnlSender.add(lblSender);
+
+			if (recipients.length > 1) {
+				strSender = sender.getUsername() + "*";
+				pnlSender.addMouseListener(this);
+			} else
+				strSender = sender.getUsername();
+
+			lblSender = new JLabel(strSender);
+			lblMessage = new JLabel(message);
+
 			
+			pnlSender.add(lblSender);
+
 			pnlMessage = new JPanel();
 			pnlMessage.add(lblMessage);
-			
+
 			pnlSender.setAlignmentX(Component.LEFT_ALIGNMENT);
 			if (sender.getUsername().equals(username))
 				pnlSender.setBackground(Color.RED);
@@ -383,15 +436,34 @@ public class MockGUI extends JPanel implements GUIInterface {
 				pnlSender.setBackground(Color.BLUE);
 
 			pnlSender.setMaximumSize(new Dimension(200, 30));
-			
+
 			setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 			setBorder(BorderFactory.createLineBorder(Color.BLACK));
-			
+
 			add(pnlSender);
 			add(pnlMessage);
 		}
-	}	
+
+		@Override
+		public void mouseClicked(MouseEvent e) {}
+
+		@Override
+		public void mousePressed(MouseEvent e) {}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			Point point = pnlSender.getLocationOnScreen();
+			point.setLocation(point.getX(), point.getY()+pnlSender.getHeight());
+			recipientsPanel = new RecipientsPanel(recipients, point);
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			recipientsPanel.dispose();
+		}
+	}
+	
 }
-
-
-
