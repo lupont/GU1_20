@@ -1,5 +1,7 @@
 package gu20;
 
+import javax.swing.ImageIcon;
+
 /**
  * List of classes for a GUI to implement to be able to work with GUIController
  * @author Alexander
@@ -17,8 +19,9 @@ public interface GUIInterface {
 	 * Receive a new message.
 	 * @param sender Sender of message
 	 * @param text Text of message
+	 * @param recipients Recipients of message
 	 */
-	public void viewNewMessage(MockUser sender, String text, String[] recipients);
+	public void viewNewMessage(MockUser sender, String text, ImageIcon image, String[] recipients);
 	
 	/**
 	 * Receive a list of contacts.
@@ -37,5 +40,7 @@ public interface GUIInterface {
 	 * @param contact
 	 */
 	public void removeContact(String contact);
+	
+	public void addAvatar(ImageIcon avatar);
 	
 }

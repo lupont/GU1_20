@@ -1,5 +1,10 @@
 package gu20;
 
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -7,7 +12,6 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +19,8 @@ import java.util.Set;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+import javax.imageio.ImageIO;
 
 /**
  * Miscellaneous helper methods.
@@ -120,5 +126,61 @@ public final class Helpers {
 		MockUser[] ret = new MockUser[users.size()];
 		ret = users.toArray(ret);
 		return ret;
+	}
+	
+	/**
+	 * Scales an image to a specified height, width changes dynamically to preserve image ratio
+	 * @param srcImg Image to scale
+	 * @param height Height (pixels) to scale image to
+	 * @return A rescaled image
+	 */
+	public static Image getScaledImage(Image srcImg, int height) {
+		
+		if (srcImg == null || height < 1)
+			return null;
+		
+		double ratio = (double) (srcImg.getHeight(null)) / srcImg.getWidth(null);
+
+		int width = (int)(ratio * height);
+		
+	    BufferedImage resizedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D g2 = resizedImg.createGraphics();
+
+	    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+	    g2.drawImage(srcImg, 0, 0, width, height, null);
+	    g2.dispose();
+
+	    return resizedImg;
+	}
+	
+	/**
+	 * Converts an array of MockUser-objects to an array of Strings containing MockUser's usernames.
+	 * @param users MockUser-array to convert
+	 * @return String array containing MockUser's username
+	 */
+	public static String[] mockUsersToString(MockUser[] users) {
+		if (users != null) {
+			String[] strUsers = new String[users.length];
+			for (int index = 0; index < users.length; index++) {
+				strUsers[index] = users[index].getUsername();
+			}
+			return strUsers;
+		}
+		return null;
+	}
+	
+	/**
+	 * Converts a file-url to a Image-object
+	 * @param file File-object to convert
+	 * @return An Image-object of the file
+	 * @throws IOException
+	 */
+	public static Image convertFileToImage(File file) throws IOException {
+		if (file == null)
+			return null;
+		
+		Image image = ImageIO.read(file);
+		
+		return image;		
 	}
 }
