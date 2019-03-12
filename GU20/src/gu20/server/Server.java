@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -298,7 +299,7 @@ public class Server implements Runnable {
 						else if(response.equals("MESSAGE")) {
 							Object obj = inputStream.readObject();
 							List<Message> messages = (ArrayList) obj;
-							
+							message.setServerReceived(Calendar.getInstance());
 							//send
 							sendMessage(messages.get(0));
 	

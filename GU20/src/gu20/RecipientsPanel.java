@@ -30,15 +30,19 @@ public class RecipientsPanel {
 		JLabel[] lblRecipients = new JLabel[recipients.length];
 		
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-		panel.setPreferredSize(new Dimension(100,100));
+//		panel.setPreferredSize(new Dimension(100,100));
 		
 		panel.add(lblTitle);
 		
 		for (int index = 0; index < lblRecipients.length; index++) {
+			if (index > 9) {
+				int moreUsers = lblRecipients.length-10;
+				panel.add(new JLabel("and " + moreUsers + " more..."));
+				break;
+			}
 			lblRecipients[index] = new JLabel(recipients[index]);
 			panel.add(lblRecipients[index]);
-		}	
-		
+		}
 		return panel;
 	}
 	

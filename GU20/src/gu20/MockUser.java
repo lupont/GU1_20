@@ -10,8 +10,9 @@ import javax.swing.ImageIcon;
  *
  */
 public class MockUser implements Serializable {
-	private static final long serialVersionUID = 918248172419L;
 
+	private static final long serialVersionUID = -6871151100638230L;
+	
 	private String username;
 	private ImageIcon avatar;
 	
@@ -26,6 +27,10 @@ public class MockUser implements Serializable {
 	
 	public ImageIcon getAvatar() {
 		return avatar;
+	}
+	
+	public void setAvatar(ImageIcon avatar) {
+		this.avatar = avatar;
 	}
 	
 	@Override

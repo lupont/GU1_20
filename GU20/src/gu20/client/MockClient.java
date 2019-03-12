@@ -11,10 +11,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.Calendar;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import gu20.GUIController;
@@ -169,7 +171,7 @@ public class MockClient implements Runnable {
 	private void handleMessage() throws ClassNotFoundException, IOException {
 		Object obj = inputStream.readObject();
 		List<Message> messages = (ArrayList) obj;
-		
+		message.setRecipientsReceived(Calendar.getInstance());
 		guiC.receiveMessages(messages);
 	}
 	

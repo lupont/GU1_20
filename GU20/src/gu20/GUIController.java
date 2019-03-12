@@ -1,9 +1,14 @@
 package gu20;
 
+import java.awt.Image;
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
 import gu20.client.MockClient;
@@ -24,6 +29,8 @@ public class GUIController {
 	
 	private GUIInterface gui;
 	
+	private int port = 12345;
+	
 	private Map<String, String> addresses = new HashMap<>();
 	
 	/**
@@ -42,6 +49,17 @@ public class GUIController {
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run() {
 				new LoginPanel(GUIController.this, username, address);
+			}
+		});
+	}
+	
+	/*
+	 * TODO Used for testing, skips login and creates an avatar
+	 */
+	public GUIController(String username, String address, String avatarPath) {
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run() {
+				new LoginPanel(GUIController.this, username, address, avatarPath);
 			}
 		});
 	}
@@ -66,9 +84,9 @@ public class GUIController {
 			public void run() {
 				gui = new MockGUI(client.getUsername(), GUIController.this);
 
-				gui.addOnlineUsers(mockUsersToString(onlineUsers));
+				gui.addOnlineUsers(Helpers.mockUsersToString(onlineUsers));
 				gui.addContacts(retrieveContacts(client.getUsername()));
-				
+				gui.addAvatar(user.getAvatar());
 			}
 		});
 	}
@@ -83,24 +101,7 @@ public class GUIController {
 			onlineUsers = users;
 		
 		if (gui != null)
-			gui.addOnlineUsers(mockUsersToString(onlineUsers));	
-	}
-	
-	/**
-	 * Converts an array of MockUser-objects to an array of String-objects
-	 * containing MockUsers' usernames
-	 * @param users Array of MockUsers to be converted
-	 * @return Array of Strings containing MockUsers' usernames
-	 */
-	private String[] mockUsersToString(MockUser[] users) {
-		if (users != null) {
-			String[] strUsers = new String[users.length];
-			for (int index = 0; index < users.length; index++) {
-				strUsers[index] = users[index].getUsername();
-			}
-			return strUsers;
-		}
-		return null;
+			gui.addOnlineUsers(Helpers.mockUsersToString(onlineUsers));	
 	}
 	
 	/**
@@ -137,7 +138,7 @@ public class GUIController {
 			contacts = new String[] {username}; //If no contacts exist, make new list
 		}
 		
-		client.setContacts(client.getUsername(), contacts);
+//		client.setContacts(client.getUsername(), contacts);
 		gui.addContacts(contacts);
 	}
 	
@@ -151,31 +152,25 @@ public class GUIController {
 			int index = 0;
 
 			for (String contact : contacts) {
-				if (username.equals(contact))
-					gui.removeContact(username);
-				else
-					tempUsers[index++] = user.getUsername();
+				if (!username.equals(contact))
+					tempUsers[index++] = user.getUsername();		
 			}
+			
 			contacts = tempUsers;
-			client.setContacts(client.getUsername(), contacts);
+			gui.addContacts(contacts);
+//			client.setContacts(client.getUsername(), contacts);
 		}
 	}
 
 	/**
-	 * Receives message from GUI and sends it to client
+	 * Receives message from GUI and sends it to client.
 	 * Must change parameter to Message-object, or create a message-object
 	 * @param message
 	 */
-	public void sendMessage(String strMessage, List<String> recipientUsernames) {
-		//TODO Ability to send picture
+	public void sendMessage(String strMessage, List<String> recipientUsernames, File file) {
 		MockUser[] receivers = new MockUser[recipientUsernames.size()];
 		int counter = 0;
-		boolean multiRecipientMessage;
-		if (recipientUsernames.size() > 1)
-			multiRecipientMessage = true;
-		else
-			multiRecipientMessage = false;
-		
+
 		for (String recipientUsername : recipientUsernames) {
 			for (MockUser user : onlineUsers) {
 				if (recipientUsername.equals(user.getUsername()))
@@ -184,10 +179,23 @@ public class GUIController {
 			if (receivers[counter] == null) {
 				receivers[counter] = new MockUser(recipientUsername, null);
 			}
+			if (receivers[counter] == null)
+				receivers[counter] = new MockUser(recipientUsername, null);
 			counter++;
 		}
 		
-		Message message = new Message(user, receivers, strMessage, null, multiRecipientMessage);
+		ImageIcon imageIcon = null;
+		if (file != null) {
+			try {
+				Image image = ImageIO.read(file);
+				System.out.println(image.getHeight(null) + "x" + image.getWidth(null));
+				imageIcon = new ImageIcon(Helpers.getScaledImage(image, 80));
+			} catch (IOException ex) {
+				
+			}
+		}
+		
+		Message message = new Message(user, receivers, strMessage, imageIcon);
 		client.sendMessage(message);
 		receiveMessage(message);
 	}
@@ -198,7 +206,7 @@ public class GUIController {
 	 * @param message
 	 */
 	public void receiveMessage(Message message) {
-		//TODO Ability to receive picture
+		gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));
 		SwingUtilities.invokeLater(() -> {
 			System.out.println(this.user + " received message from " + message.getSender());
 			gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));			
@@ -217,6 +225,7 @@ public class GUIController {
 	 * Logout, disconnects client and opens new login window
 	 */
 	public void logout() {
+		client.setContacts(client.getUsername(), contacts);
 		client.disconnect();
 		openLoginWindow();
 	}
@@ -228,16 +237,34 @@ public class GUIController {
 	 * TODO Check if username is already taken, and if unsent messages need to be imported
 	 * @param username String received from Login-textfield
 	 */
-	public void login(String username, String host) {
+	public void login(String username, String host, File file) {
+		ImageIcon avatar;
 		
-		user = new MockUser(username, null);
-		client = new MockClient(user, addresses.get(host), 12345);
+		try {
+			avatar = new ImageIcon(Helpers.getScaledImage(Helpers.convertFileToImage(file), 40));
+		} catch (IOException | NullPointerException ex ) {
+			avatar = null;
+		}
+		
+		user = new MockUser(username, avatar);
+		client = new MockClient(user, addresses.get(host), port);
 		client.setGUIController(this);
 		
 		openGUI();
 	}
 	
-	public void addProfilePicture() {
-		//TODO Ability to add profile picture
+	public void addProfilePicture(File file) {
+		ImageIcon avatar;
+
+		try {
+			avatar = new ImageIcon(Helpers.getScaledImage(Helpers.convertFileToImage(file), 40));
+			
+			user.setAvatar(avatar);
+			
+			gui.addAvatar(user.getAvatar());
+			
+		} catch (IOException e) {
+			System.out.println("Couldn't set file as avatar");
+		}
 	}
 }
