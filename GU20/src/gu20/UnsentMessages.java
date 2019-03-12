@@ -17,7 +17,7 @@ public class UnsentMessages {
 	public synchronized ArrayList<Message> put(MockUser user, Message message){
 		
 		//first time
-		if(unsentMessages.get(user) == null) {
+		if(!unsentMessages.containsKey(user) || unsentMessages.get(user) == null) {
 			ArrayList<Message> messages = new ArrayList<>();
 			messages.add(message);
 			return unsentMessages.put(user, messages);
@@ -37,6 +37,17 @@ public class UnsentMessages {
 	}
 	
 	public synchronized ArrayList<Message> remove(MockUser user) {
-		return unsentMessages.remove(user);
+		ArrayList<Message> messages = unsentMessages.remove(user);
+		return messages;
+	}
+	
+	public synchronized ArrayList<Message> pop(MockUser user) {
+		ArrayList<Message> popped = unsentMessages.get(user);
+		unsentMessages.put(user, null);
+		return popped;
+	}
+	
+	public synchronized boolean containsKey(MockUser user) {
+		return unsentMessages.containsKey(user);
 	}
 }

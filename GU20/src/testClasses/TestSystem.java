@@ -11,5 +11,12 @@ public class TestSystem {
 		new GUIController("pontus", "localhost");
 		new GUIController("oskar", "localhost");
 		new GUIController("p√§rla", "localhost");
+		
+		
+//		String[] names = { "alex", "pontus", "oskar", "p‰rla", "racquel", "sara", "foobar", "johndoe", "baz", "johnsmith" };
+//
+//		for (int i = 0; i < 10; i++) {
+//			new GUIController(names[i], "localhost");
+//		}
 	}
 }

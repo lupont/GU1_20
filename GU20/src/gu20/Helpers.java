@@ -9,6 +9,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,7 +22,7 @@ import java.util.logging.SimpleFormatter;
  * @author lupont
  *
  */
-public final class Helpers {
+public final class Helpers {	
 	
 	/**
 	 * Attaches a FileHandler to the given Logger, making it log to the specified path.
@@ -85,7 +86,7 @@ public final class Helpers {
 		}
 		return builder.toString();
 	}
-	
+		
 	public static synchronized void printClients(Clients clients) {
 		if (clients.isEmpty()) {
 			System.out.println("No clients to print.");
@@ -103,7 +104,7 @@ public final class Helpers {
 		System.out.println();
 	}
 	
-	public static synchronized MockUser[] getConnectedUsers(Clients clients) {
+	public static MockUser[] getConnectedUsers(Clients clients) {
 		if (clients.isEmpty()) {
 			return new MockUser[0];
 		}

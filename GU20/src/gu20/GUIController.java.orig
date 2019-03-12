@@ -179,12 +179,8 @@ public class GUIController {
 		for (String recipientUsername : recipientUsernames) {
 			for (MockUser user : onlineUsers) {
 				if (recipientUsername.equals(user.getUsername()))
-					receivers[counter] = user;
+					receivers[counter++] = user;
 			}
-			if (receivers[counter] == null) {
-				receivers[counter] = new MockUser(recipientUsername, null);
-			}
-			counter++;
 		}
 		
 		Message message = new Message(user, receivers, strMessage, null, multiRecipientMessage);
@@ -199,18 +195,23 @@ public class GUIController {
 	 */
 	public void receiveMessage(Message message) {
 		//TODO Ability to receive picture
+<<<<<<< HEAD
 		SwingUtilities.invokeLater(() -> {
 			System.out.println(this.user + " received message from " + message.getSender());
-			gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));			
+			gui.viewNewMessage(message.getSender(), message.getText());			
 		});
 	}
 	
 	public void receiveMessages(List<Message> messages) {
 		SwingUtilities.invokeLater(() -> {
 			for (Message message : messages) {
-				gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));
+				gui.viewNewMessage(message.getSender(), message.getText());
 			}
 		});
+=======
+		
+		gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));
+>>>>>>> b48b39dc86d5f884ffbd4c83f6e7e0c1ccccc42d
 	}
 	
 	/**
