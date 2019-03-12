@@ -23,13 +23,13 @@ public class TestSystem {
 //			new GUIController(user, "localhost");
 //		}
 
-		new GUIController("pontus", "localhost");
-//		new GUIController();
+//		new GUIController("pontus", "localhost");
+		new GUIController();
 		new GUIController("oskar", "localhost");
 		new GUIController("pÃ¤rla", "localhost");
 		
 		
-//		String[] names = { "alex", "pontus", "oskar", "pärla", "racquel", "sara", "foobar", "johndoe", "baz", "johnsmith" };
+//		String[] names = { "alex", "pontus", "oskar", "pï¿½rla", "racquel", "sara", "foobar", "johndoe", "baz", "johnsmith" };
 //
 //		for (int i = 0; i < 10; i++) {
 //			new GUIController(names[i], "localhost");

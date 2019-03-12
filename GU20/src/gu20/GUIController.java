@@ -206,17 +206,17 @@ public class GUIController {
 	 * @param message
 	 */
 	public void receiveMessage(Message message) {
-		gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));
+//		gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));
 		SwingUtilities.invokeLater(() -> {
 			System.out.println(this.user + " received message from " + message.getSender());
-			gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));			
+			gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));			
 		});
 	}
 	
 	public void receiveMessages(List<Message> messages) {
 		SwingUtilities.invokeLater(() -> {
 			for (Message message : messages) {
-				gui.viewNewMessage(message.getSender(), message.getText(), mockUsersToString(message.getRecipients()));
+				gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));
 			}
 		});
 	}

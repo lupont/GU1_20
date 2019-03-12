@@ -1,6 +1,9 @@
 # Log files
 *.log.*
 
+# Saved contacts
+GU20/res/contacts/*
+
 # Compiled class file
 *.class
 

@@ -507,9 +507,10 @@ public class MockGUI extends JPanel implements GUIInterface {
 
 			if (recipients.length > 1) {
 				strSender = sender.getUsername() + "*";
-				pnlSender.addMouseListener(this);
 			} else
 				strSender = sender.getUsername();
+			
+			pnlSender.addMouseListener(this);
 			
 			lblSender = new JLabel(strSender);
 			lblAvatar = new JLabel();

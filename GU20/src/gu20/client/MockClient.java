@@ -171,7 +171,8 @@ public class MockClient implements Runnable {
 	private void handleMessage() throws ClassNotFoundException, IOException {
 		Object obj = inputStream.readObject();
 		List<Message> messages = (ArrayList) obj;
-		message.setRecipientsReceived(Calendar.getInstance());
+		for (Message message : messages)
+			message.setRecipientsReceived(Calendar.getInstance());
 		guiC.receiveMessages(messages);
 	}
 	

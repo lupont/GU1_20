@@ -299,7 +299,8 @@ public class Server implements Runnable {
 						else if(response.equals("MESSAGE")) {
 							Object obj = inputStream.readObject();
 							List<Message> messages = (ArrayList) obj;
-							message.setServerReceived(Calendar.getInstance());
+							for (Message message : messages)
+								message.setServerReceived(Calendar.getInstance());
 							//send
 							sendMessage(messages.get(0));
 	
