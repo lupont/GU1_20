@@ -1,13 +1,46 @@
 package gu20;
 
+import javax.swing.ImageIcon;
+
+/**
+ * List of classes for a GUI to implement to be able to work with GUIController
+ * @author Alexander
+ *
+ */
 public interface GUIInterface {
 	
-	public void addOnlineUsers(MockUser[] users);
+	/**
+	 * Receive an array of usernames that are online.
+	 * @param users 
+	 */
+	public void addOnlineUsers(String[] users);
 	
-	public void viewNewMessage(MockUser sender, String text);
+	/**
+	 * Receive a new message.
+	 * @param sender Sender of message
+	 * @param text Text of message
+	 * @param recipients Recipients of message
+	 */
+	public void viewNewMessage(MockUser sender, String text, ImageIcon image, String[] recipients);
 	
-	public void addContact(MockUser contact);
+	/**
+	 * Receive a list of contacts.
+	 * @param contacts Contacts of the user
+	 */
+	public void addContacts(String[] contacts);
 	
-	public void removeContact(MockUser contact);
+	/**
+	 * Don't implement, this will be removed.
+	 * @param contact
+	 */
+	public void addContact(String contact);
+	
+	/**
+	 * Don't implement, this will be removed.
+	 * @param contact
+	 */
+	public void removeContact(String contact);
+	
+	public void addAvatar(ImageIcon avatar);
 	
 }
