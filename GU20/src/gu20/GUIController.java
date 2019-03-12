@@ -16,8 +16,10 @@ import gu20.client.MockClient;
 public class GUIController {
 	
 	private MockClient client;
-	private MockUser[] onlineUsers;
 	private MockUser user;
+	
+	private MockUser[] onlineUsers;
+	private String[] contacts;
 	
 	private GUIInterface gui;
 	
@@ -32,20 +34,15 @@ public class GUIController {
 		openLoginWindow();
 	}
 	
-	/**
-	 * Not sure if this constructor is needed for anything
-	 * @param client
-	 */
-	public GUIController(MockClient client) {
-		this.client = client;
-		openLoginWindow();
-	}
-	
 	/*
 	 * TODO Used for testing, skips login-window, to be removed.
 	 */
 	public GUIController(String username, String address) {
-		new LoginPanel(this, username, address);
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run() {
+				new LoginPanel(GUIController.this, username, address);
+			}
+		});
 	}
 	
 	/**
@@ -68,35 +65,99 @@ public class GUIController {
 			public void run() {
 				gui = new MockGUI(client.getUsername(), GUIController.this);
 
-				gui.addOnlineUsers(onlineUsers);
+				gui.addOnlineUsers(mockUsersToString(onlineUsers));
+				gui.addContacts(retrieveContacts(client.getUsername()));
+				
 			}
 		});
 	}
 	
+	/**
+	 * Receives update from Client when user logs in or out.
+	 * Updates list of online users in gui.
+	 * @param users A list on online users
+	 */
 	public void onlineUsers(MockUser[] users) {
 		
-		onlineUsers = users;
+			onlineUsers = users;
 		
 		if (gui != null)
-			gui.addOnlineUsers(onlineUsers);
-		
-		
+			gui.addOnlineUsers(mockUsersToString(onlineUsers));	
 	}
 	
-	//TODO Preventing from adding a user more than once to contacts
-	public void addUserToContacts(String username) {
-		//TODO Send contact to client
-		for (MockUser user : onlineUsers) {
-			if (user.getUsername().equals(username)) {
-				gui.addContact(user);
-				return;
+	/**
+	 * Converts an array of MockUser-objects to an array of String-objects
+	 * containing MockUsers' usernames
+	 * @param users Array of MockUsers to be converted
+	 * @return Array of Strings containing MockUsers' usernames
+	 */
+	private String[] mockUsersToString(MockUser[] users) {
+		if (users != null) {
+			String[] strUsers = new String[users.length];
+			for (int index = 0; index < users.length; index++) {
+				strUsers[index] = users[index].getUsername();
 			}
+			return strUsers;
 		}
+		return null;
 	}
 	
-	//TODO Remove users from contact list
-	public void removeUserFromContacts(String username) {
+	/**
+	 * Retrieves a String-array of usernames a user has saved as contacts.
+	 * @param username The username of the current user
+	 * @return Array with usernames to the user's contacts
+	 */
+	private String[] retrieveContacts(String username) {
 		
+		contacts = client.getContacts(username);
+
+		return contacts;
+	}
+	
+	/**
+	 * Adds a new username to list of contacts.
+	 * @param username Username to be added to list of contacts
+	 */
+	public void addUserToContacts(String username) {
+		
+		//Check if contact is already added
+		if (contacts != null) {
+			for (String contact : contacts) {
+				if (contact.equals(username))
+					return;
+			}
+			String[] tempUsers = new String[contacts.length+1]; //Expand array by 1
+			for (int i = 0; i < contacts.length; i++) { //Add all previous contacts
+				tempUsers[i] = contacts[i];
+			}
+			tempUsers[contacts.length] = username; //Add new contact
+			contacts = tempUsers;
+		} else {
+			contacts = new String[] {username}; //If no contacts exist, make new list
+		}
+		
+		client.setContacts(client.getUsername(), contacts);
+		gui.addContacts(contacts);
+	}
+	
+	/**
+	 * Removes a username from list of contacts.
+	 * @param username Username to be removed from list of contacts
+	 */
+	public void removeUserFromContacts(String username) {
+		if (contacts != null) {
+			String[] tempUsers = new String[contacts.length - 1];
+			int index = 0;
+
+			for (String contact : contacts) {
+				if (username.equals(contact))
+					gui.removeContact(username);
+				else
+					tempUsers[index++] = user.getUsername();
+			}
+			contacts = tempUsers;
+			client.setContacts(client.getUsername(), contacts);
+		}
 	}
 
 	/**
@@ -109,7 +170,7 @@ public class GUIController {
 		//TODO Ability to send picture
 		MockUser receiver = null;
 		for (MockUser user : onlineUsers) {
-			if (user.getUsername().equals(recipientUsername))
+			if (recipientUsername.equals(user.getUsername()))
 				receiver = user;
 		}
 		
@@ -144,6 +205,7 @@ public class GUIController {
 	 * @param username String received from Login-textfield
 	 */
 	public void login(String username, String host) {
+		
 		user = new MockUser(username, null);
 		client = new MockClient(user, addresses.get(host), 12345);
 		client.setGUIController(this);

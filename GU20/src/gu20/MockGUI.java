@@ -86,19 +86,25 @@ public class MockGUI extends JPanel implements GUIInterface {
 		updateUI();
 	}
 	
-	public void addOnlineUsers(MockUser[] onlineUsers) {
+	public void addOnlineUsers(String[] onlineUsers) {
 		usersPanel.addOnlineUsers(onlineUsers);
 		updateUI();
 	}
-
-	public void addContact(MockUser contact) {
+	
+	public void addContacts(String[] contacts) {
+		usersPanel.addContacts(contacts);
+		updateUI();
+	}
+	
+	public void addContact(String contact) {
 		usersPanel.addContact(contact);
 		updateUI();
 	}
 	
 	//TODO
-	public void removeContact(MockUser contact) {
-		
+	public void removeContact(String contact) {
+		usersPanel.removeContact(contact);
+		updateUI();
 	}
 	
 	/**
@@ -111,10 +117,6 @@ public class MockGUI extends JPanel implements GUIInterface {
 		private JLabel lblTitle;
 		private JLabel lblUser;
 		
-		/**
-		 * 
-		 * @param username Username of person logged in
-		 */
 		public TitlePanel(String username) {
 			lblTitle = new JLabel("Chat Program");
 			lblUser = new JLabel("User:" + username);
@@ -159,11 +161,19 @@ public class MockGUI extends JPanel implements GUIInterface {
 			add(buttonsPanel, BorderLayout.SOUTH);
 		}
 		
-		public void addContact(MockUser contact) {
+		public void addContacts(String[] contacts) {
+			contactPanel.addContacts(contacts);
+		}
+		
+		public void addContact(String contact) {
 			contactPanel.addContact(contact);
 		}
 		
-		public void addOnlineUsers(MockUser[] onlineUsers) {
+		public void removeContact(String contact) {
+			contactPanel.removeContact(contact);
+		}
+		
+		public void addOnlineUsers(String[] onlineUsers) {
 			onlinePanel.addOnlineUsers(onlineUsers);
 		}
 		
@@ -211,16 +221,30 @@ public class MockGUI extends JPanel implements GUIInterface {
 		public ContactPanel(String header, ContactButtonPanel buttonsPanel) {
 			super(header, buttonsPanel);
 		}
+
+		public void addContacts(String[] contacts) {
+			
+			if (contacts != null) {
+				listModel.clear();
+				for (String contact : contacts)
+					listModel.addElement(contact);
+			}
+		}
 		
-		public void addContact(MockUser contact) {
-			listModel.addElement(contact.getUsername());
+		public void addContact(String contact) {
+			listModel.addElement(contact);
+		}
+		
+		public void removeContact(String contact) {
+			listModel.removeElement(contact);
 		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
+			selectedUser = userList.getSelectedValue();
 			usersPanel.deselectAll("online");
-			
 			buttonsPanel.setAddButtonText("Remove contact");
+			inputPanel.toggleSendButton(true);
 			
 		}
 	}
@@ -231,13 +255,15 @@ public class MockGUI extends JPanel implements GUIInterface {
 			super(header, buttonsPanel);
 		}
 		
-		public void addOnlineUsers(MockUser[] users) {
+		public void addOnlineUsers(String[] users) {
 			
 			listModel.clear();
 			
-			for (MockUser user : users) {
-				if (!user.getUsername().equals(username))
-					listModel.addElement(user.getUsername());
+			if (users != null) {
+				for (String user : users) {
+					if (!user.equals(username))
+						listModel.addElement(user);
+				}
 			}
 		}
 
@@ -277,9 +303,15 @@ public class MockGUI extends JPanel implements GUIInterface {
 				controller.logout();
 				frame.dispose();
 			} else if (e.getSource().equals(btnAddContact)) {
-				if (selectedUser != null)
-					System.out.println(("Trying to add contact"));
-					controller.addUserToContacts(selectedUser);
+				if (selectedUser != null) {
+					if (btnAddContact.getText().equals("Add contact")) {
+						System.out.println("Trying to add contact");
+						controller.addUserToContacts(selectedUser);
+					} else if (btnAddContact.getText().equals("Remove contact")) {
+						System.out.println("Trying to remove contact");
+						controller.removeUserFromContacts(selectedUser);
+					}
+				}
 			}
 		}
 	}
@@ -390,6 +422,3 @@ public class MockGUI extends JPanel implements GUIInterface {
 		}
 	}	
 }
-
-
-
