@@ -153,16 +153,17 @@ public class Server implements Runnable {
 						System.out.println(e);
 					} 
 				}
-				LOGGER.log(Level.INFO, String.format(
-					"Server sent message from %s to [%s]", 
-					message.getSender().getUsername(), 
-					Helpers.joinArray(message.getRecipients(), ", ")
-				));
 				else {
 					// TODO: Add message to unsent queue
 					System.out.println(listener.getUser().getUsername() + " socket is closed"); 
 					unsentMessages.put(listener.getUser(), message);
 				}
+				
+				LOGGER.log(Level.INFO, String.format(
+					"Server sent message from %s to [%s]", 
+					message.getSender().getUsername(), 
+					Helpers.joinArray(message.getRecipients(), ", ")
+				));
 			}
 			
 //			for (MockUser recipient : message.getRecipients()) {

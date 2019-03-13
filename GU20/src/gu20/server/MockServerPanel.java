@@ -36,7 +36,8 @@ public class MockServerPanel extends JPanel {
 		}
 		catch (Exception ex) {}
 		
-		JPanel pnlTimePickers = new JPanel(new BoxLayout(this, BoxLayout.Y_AXIS));
+		JPanel pnlTimePickers = new JPanel();
+		pnlTimePickers.setLayout(new BoxLayout(pnlTimePickers, BoxLayout.X_AXIS));
 		
 		JTextField tfStartTime = new JTextField();
 		tfStartTime.setToolTipText("2019-03-12 07:58:47.816");
@@ -60,11 +61,7 @@ public class MockServerPanel extends JPanel {
 		add(pnlTimePickers, BorderLayout.NORTH);
 
 		JButton btnAddClient = new JButton("Add client");
-		btnAddClient.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent event) {
-				new GUIController();
-			}
-		});
+		btnAddClient.addActionListener(event -> new GUIController());
 		add(btnAddClient, BorderLayout.SOUTH);
 		
 		taLog = new JTextArea();
