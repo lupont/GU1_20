@@ -33,6 +33,8 @@ import java.util.logging.SimpleFormatter;
 
 import javax.imageio.ImageIO;
 
+import gu20.entities.User;
+
 /**
  * Miscellaneous helper methods.
  * @author lupont
@@ -149,30 +151,30 @@ public final class Helpers {
 		
 		System.out.println();
 		System.out.println("======CLIENTS======");
-		Set<Map.Entry<MockUser, Socket>> entrySet = clients.entrySet();
+		Set<Map.Entry<User, Socket>> entrySet = clients.entrySet();
 		
-		for (Map.Entry<MockUser, Socket> entry : entrySet) {
+		for (Map.Entry<User, Socket> entry : entrySet) {
 			System.out.println(entry.getKey() + ": " + entry.getValue());
 		}
 		System.out.println("===================");
 		System.out.println();
 	}
 	
-	public static MockUser[] getConnectedUsers(Clients clients) {
+	public static User[] getConnectedUsers(Clients clients) {
 		if (clients.isEmpty()) {
-			return new MockUser[0];
+			return new User[0];
 		}
 		
-		List<MockUser> users = new ArrayList<>();
-		Set<Map.Entry<MockUser, Socket>> entrySet = clients.entrySet();
+		List<User> users = new ArrayList<>();
+		Set<Map.Entry<User, Socket>> entrySet = clients.entrySet();
 		
-		for (Map.Entry<MockUser, Socket> entry : entrySet) {
+		for (Map.Entry<User, Socket> entry : entrySet) {
 			if (entry.getValue() != null) {
 				users.add(entry.getKey());
 			}
 		}
 		
-		MockUser[] ret = new MockUser[users.size()];
+		User[] ret = new User[users.size()];
 		ret = users.toArray(ret);
 		return ret;
 	}
@@ -207,7 +209,7 @@ public final class Helpers {
 	 * @param users MockUser-array to convert
 	 * @return String array containing MockUser's username
 	 */
-	public static String[] mockUsersToString(MockUser[] users) {
+	public static String[] mockUsersToString(User[] users) {
 		if (users != null) {
 			String[] strUsers = new String[users.length];
 			for (int index = 0; index < users.length; index++) {

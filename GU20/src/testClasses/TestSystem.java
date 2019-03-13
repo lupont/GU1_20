@@ -1,38 +1,19 @@
 package testClasses;
 
-import java.util.ArrayList;
-
-import gu20.GUIController;
-import gu20.server.RunServer;
-
+/**
+ * A class for testing the system.
+ * @author Alexander Libot
+ *
+ */
 public class TestSystem {
+	/**
+	 * Starts TestServer once, and TestClient twice.
+	 * @param args Not used.
+	 */
 	public static void main(String[] args) {
+		TestServer.main(null);
 		
-		RunServer.main(args);
-		
-//		To test with many users
-//		ArrayList<String> users = new ArrayList<>();
-//		
-//		String temp = "user";
-//		
-//		for (int i = 0; i < 20; i++) {
-//			users.add(new String(temp + i));
-//		}
-//		
-//		for (String user : users) {
-//			new GUIController(user, "localhost");
-//		}
-
-//		new GUIController("pontus", "localhost");
-//		new GUIController();
-//		new GUIController("oskar", "localhost");
-//		new GUIController("pärla", "localhost");
-		
-		
-//		String[] names = { "alex", "pontus", "oskar", "p�rla", "racquel", "sara", "foobar", "johndoe", "baz", "johnsmith" };
-//
-//		for (int i = 0; i < 10; i++) {
-//			new GUIController(names[i], "localhost");
-//		}
+		TestClient.main(null);
+		TestClient.main(null);
 	}
 }

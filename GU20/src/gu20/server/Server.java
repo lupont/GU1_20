@@ -20,12 +20,17 @@ import java.util.stream.Collectors;
 
 import javax.swing.ImageIcon;
 
-import gu20.MockUser;
+import gu20.entities.Message;
+import gu20.entities.User;
 import gu20.UnsentMessages;
 import gu20.Clients;
 import gu20.Helpers;
-import gu20.Message;
 
+/**
+ * The server. Handles communication between clients.
+ * @author Oskar Molander, Pontus Laos
+ *
+ */
 public class Server implements Runnable {
 	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 	public static final String LOGGER_PATH = "logs/" + Server.class.getName() + ".log";
@@ -38,6 +43,10 @@ public class Server implements Runnable {
 	private Thread server = new Thread(this);
 	private List<ClientListener> clientListeners;
 
+	/**
+	 * Creates server socket and starts the server thread.
+	 * @param port The port on which the server socket should be created.
+	 */
 	public Server(int port) {
 		Helpers.addFileHandler(LOGGER, LOGGER_PATH);
 		
@@ -64,10 +73,6 @@ public class Server implements Runnable {
 				
 				ClientListener clientListener = new ClientListener(socket);
 				clientListener.start();
-				
-//				synchronized (clientListeners) {
-//					clientListeners.add(clientListener);
-//				}
 			}
 			catch (IOException ex) {
 				System.out.println("IO");
@@ -75,129 +80,89 @@ public class Server implements Runnable {
 		}
 	}
 	
-	public void close() {
-		if (server != null) {
-			synchronized (clientListeners) {
-				for (ClientListener listener : clientListeners) {
-					listener.interrupt();
-					listener = null;
+	/**
+	 * Updates all the connected users with who is currently connected, and who most recently connected/disconnected.
+	 * @param user The user who most recently connected or disconnected.
+	 * @param action What the user did, "CONNECTED" if the user connected, "DISCONNECTED" if they disconnected.
+	 */
+	private void updateUserList(User user, String action) {
+		User[] connectedUsers = Helpers.getConnectedUsers(clients);
+		
+		ObjectOutputStream os;
+		synchronized (clientListeners) {
+			for (ClientListener listener : clientListeners) {
+				try {
+					os = listener.getOutputStream();
+					os.writeUTF("UPDATE");
+					os.writeObject(user);
+					os.writeUTF(action);
+					os.writeObject(connectedUsers);
+					os.flush();
 				}
-				clientListeners.clear();
+				catch (IOException ex) {}
 			}
-			
-			server.interrupt();
-			server = null;
-			
-			LOGGER.log(Level.INFO, "Server stopped.");
 		}
 	}
 	
-	private void updateUserList(MockUser user, String action) {
-//		new Thread(new Runnable() {
-//			public synchronized void run() {
-				MockUser[] connectedUsers = Helpers.getConnectedUsers(clients);
-				
-				ObjectOutputStream os;
-				synchronized (clientListeners) {
-					for (ClientListener listener : clientListeners) {
-						try {
-							os = listener.getOutputStream();
-							os.writeUTF("UPDATE");
-							os.writeObject(user);
-							os.writeUTF(action);
-							os.writeObject(connectedUsers);
-							os.flush();
-						}
-						catch (IOException ex) {}
-					}
-				}
-//			}
-//		}).start();
-	}
-	
+	/**
+	 * Sends a message to its recipients.
+	 * @param message The message to be sent. 
+	 */
 	private void sendMessage(Message message) {
-//		new Thread(() -> {
-			ObjectOutputStream os;
-			
-			ArrayList<MockUser> recipients = new ArrayList<>();
-			for (MockUser user : message.getRecipients()) {
-				recipients.add(user);
+		ObjectOutputStream os;
+		
+		ArrayList<User> recipients = new ArrayList<>();
+		for (User user : message.getRecipients()) {
+			recipients.add(user);
+		}
+		
+		for (ClientListener listener : clientListeners) {
+			if (!recipients.contains(listener.getUser())) {
+				continue;
 			}
 			
-			for (ClientListener listener : clientListeners) {
-				if (!recipients.contains(listener.getUser())) {
-					continue;
-				}
+			os = listener.getOutputStream();
 				
-				os = listener.getOutputStream();
-					
-				if (clients.get(listener.getUser()) != null && !listener.getSocket().isClosed()) {
-					try {
-						if (message == null) {
-							System.out.println();
-							System.out.println("Message was null, not sending.");
-							System.out.println();
-							return;
-						}
-						os.writeUTF("MESSAGE");
-						List<Message> messages = new ArrayList<>();
-						messages.add(message);
-						os.writeObject(messages);
-						os.flush();
-						System.out.println(message.getSender() + " Sent message to recipients: " + listener.getUser());
-					} 
-					catch (IOException e) {
-						e.printStackTrace();
-					} 
-					catch (NullPointerException e) {
-						System.out.println(e);
-					} 
-				}
-				else {
-					// TODO: Add message to unsent queue
-					System.out.println(listener.getUser().getUsername() + " socket is closed"); 
-					unsentMessages.put(listener.getUser(), message);
-				}
-				
-				LOGGER.log(Level.INFO, String.format(
-					"Server sent message from %s to [%s]", 
-					message.getSender().getUsername(), 
-					Helpers.joinArray(message.getRecipients(), ", ")
-				));
+			if (clients.get(listener.getUser()) != null && !listener.getSocket().isClosed()) {
+				try {
+					if (message == null) {
+						System.out.println();
+						System.out.println("Message was null, not sending.");
+						System.out.println();
+						return;
+					}
+					os.writeUTF("MESSAGE");
+					List<Message> messages = new ArrayList<>();
+					messages.add(message);
+					os.writeObject(messages);
+					os.flush();
+					System.out.println(message.getSender() + " Sent message to recipients: " + listener.getUser());
+				} 
+				catch (IOException e) {
+					e.printStackTrace();
+				} 
+				catch (NullPointerException e) {
+					System.out.println(e);
+				} 
+			}
+			else {
+				// TODO: Add message to unsent queue
+				System.out.println(listener.getUser().getUsername() + " socket is closed"); 
+				unsentMessages.put(listener.getUser(), message);
 			}
 			
-//			for (MockUser recipient : message.getRecipients()) {
-//				for (ClientListener listener : clientListeners) {
-//					if (listener.getUser().getUsername().equals(recipient.getUsername())) {
-//						os = listener.getOutputStream();
-//						
-//						if (!listener.getSocket().isClosed()) {
-//							try {
-//								os.writeUTF("MESSAGE");
-//								ArrayList<Message> messages = new ArrayList<>();
-//								messages.add(message);
-//								os.writeObject(messages);
-//								os.flush();
-//								System.out.println(message.getSender() + " Sent message to recipients: " + recipient);
-//							} 
-//							catch (IOException e) {
-//								System.out.println(e);
-//							} 
-//							catch (NullPointerException e) {
-//								System.out.println(e);
-//							} 
-//						}
-//						else {
-//							// TODO: Add message to unsent queue
-//							System.out.println(listener.getUser().getUsername() + " socket is closed"); 
-//							unsentMessages.put(listener.getUser(), message);
-//						}
-//					}	
-//				}	
-//			}
-//		}).start();
+			LOGGER.log(Level.INFO, String.format(
+				"Server sent message from %s to [%s]", 
+				message.getSender().getUsername(), 
+				Helpers.joinArray(message.getRecipients(), ", ")
+			));
+		}
 	}
 	
+	/**
+	 * Sends all messages that were sent to a user when they were disconnected.
+	 * @param listener The listener of the user who should receive the messages.
+	 */
 	private void handleUnsentMessages(ClientListener listener) {
 		try {
 			ObjectOutputStream os = listener.getOutputStream();
@@ -211,24 +176,34 @@ public class Server implements Runnable {
 				os.flush();
 				
 				System.out.println("Sent unsent messages to " + listener.getUser());
-//				unsentMessages.put(listener.getUser(), null);
 			}
 		}
 		catch (IOException ex) {}
 	}
 	
+	/**
+	 * Handles the communication with a client.
+	 * @author Oskar Molander, Pontus Laos
+	 *
+	 */
 	private class ClientListener extends Thread {
-		// The client's socket
 		private Socket socket;
 		private ObjectOutputStream outputStream;
 		private ObjectInputStream inputStream;
 		
-		private MockUser user;
+		private User user;
 		
+		/**
+		 * @return The socket connected to the client.
+		 */
 		public Socket getSocket() {
 			return socket;
 		}
 		
+		/**
+		 * Constructs a new ClientListener and creates input and output streams from the given socket.
+		 * @param socket The socket of which to create the streams.
+		 */
 		public ClientListener(Socket socket) {
 			this.socket = socket;
 			
@@ -241,25 +216,31 @@ public class Server implements Runnable {
 			}
 		}
 		
-		public MockUser getUser() {
+		/**
+		 * @return The user the client is connected as.
+		 */
+		public User getUser() {
 			return user;
 		}
 		
+		/**
+		 * @return The output stream of the connected client. Used to communicate directly with this user.
+		 */
 		public ObjectOutputStream getOutputStream() {
 			return outputStream;
 		}
 		
+		/**
+		 * Waits for a client to connect, and continually listens for disconnect and message requests.
+		 */
 		@Override
 		public void run() {
 			try {
-				// Get the request type from the stream.
 				String method = inputStream.readUTF();
 				
-				// If it is a CONNECT request...
 				if (method.equals("CONNECT")) {
-					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();
-					MockUser user = (MockUser) obj;
+					User user = (User) obj;
 					LOGGER.log(Level.INFO, String.format("%s (@%s) connected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 					
 					synchronized (clientListeners) {
@@ -290,34 +271,27 @@ public class Server implements Runnable {
 				}
 				
 				while (!Thread.interrupted()) {
-					// If it is a DISCONNECT request...
 					try {
 						String response = inputStream.readUTF();
 						
 						if (response.equals("DISCONNECT")) {
-							
-							// ... the next part of the request should contain a User object.
 							Object obj = inputStream.readObject();
-							MockUser user = (MockUser) obj;
+							User user = (User) obj;
 							
 							clients.put(user, null);
 							LOGGER.log(Level.INFO, String.format("%s (@%s) disconnected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 							updateUserList(user, "DISCONNECTED");
-//							clientListeners.remove(this);
-							
-//							synchronized (clientListeners) {
-//								clientListeners.remove(this);
-//							}
-							
 							interrupt();
 							return;
 						}
-						else if(response.equals("MESSAGE")) {
+						else if (response.equals("MESSAGE")) {
 							Object obj = inputStream.readObject();
 							List<Message> messages = (ArrayList) obj;
-							for (Message message : messages)
+							
+							for (Message message : messages) {
 								message.setServerReceived(Calendar.getInstance());
-							//send
+							}
+							
 							sendMessage(messages.get(0));
 	
 						}
