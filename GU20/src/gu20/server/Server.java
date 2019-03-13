@@ -260,6 +260,7 @@ public class Server implements Runnable {
 					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();
 					MockUser user = (MockUser) obj;
+					LOGGER.log(Level.INFO, String.format("%s (@%s) connected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 					
 					synchronized (clientListeners) {
 						Iterator<ClientListener> iterator = clientListeners.iterator();
@@ -280,7 +281,6 @@ public class Server implements Runnable {
 					if (clients.get(user) == null) {
 						clients.put(user, socket);
 						this.user = user;
-						LOGGER.log(Level.INFO, String.format("%s (@%s) connected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 						updateUserList(user, "CONNECTED");
 					}
 

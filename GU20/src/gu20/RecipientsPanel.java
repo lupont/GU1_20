@@ -48,6 +48,7 @@ public class RecipientsPanel {
 	
 	private void putInFrame(JPanel panel) {
 		frame = new JFrame();
+		frame.setUndecorated(true);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setResizable(false);
 		frame.add(panel);

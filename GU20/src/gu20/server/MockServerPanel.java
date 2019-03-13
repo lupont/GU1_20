@@ -31,13 +31,13 @@ public class MockServerPanel extends JPanel {
 		
 		setLayout(new BorderLayout());
 		
-		try {
-			add(new JLabel("IP: " + Helpers.getFirstNonLoopbackIPv4Address()), BorderLayout.NORTH);
-		}
-		catch (Exception ex) {}
-		
 		JPanel pnlTimePickers = new JPanel();
 		pnlTimePickers.setLayout(new BoxLayout(pnlTimePickers, BoxLayout.X_AXIS));
+		
+		try {
+			pnlTimePickers.add(new JLabel("IP: " + Helpers.getFirstNonLoopbackIPv4Address()));
+		}
+		catch (Exception ex) {}
 		
 		JTextField tfStartTime = new JTextField();
 		tfStartTime.setToolTipText("2019-03-12 07:58:47.816");
