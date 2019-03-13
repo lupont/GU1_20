@@ -246,6 +246,8 @@ public class GUIController {
 			avatar = null;
 		}
 		
+		addresses.put(host, host);
+		
 		user = new MockUser(username, avatar);
 		client = new MockClient(user, addresses.get(host), port);
 		client.setGUIController(this);
