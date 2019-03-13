@@ -15,7 +15,9 @@ import java.net.NetworkInterface;
 import java.net.Socket;
 import java.net.SocketException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
@@ -83,11 +86,12 @@ public final class Helpers {
 	}
 	
 	/**
-	 * Reads a log file between the given times.
+	 * Reads a log file between the given dates.
 	 * @param filePath The log file to read.
-	 * @param start The start time.
-	 * @param end The end time.
+	 * @param start The start date.
+	 * @param end The end date.
 	 * @return A List<String>, each element containing a line of the file.
+	 * @throws ParseException 
 	 */
 	public static final List<String> readLogBetween(String filePath, String start, String end) {
 		try (
@@ -95,18 +99,24 @@ public final class Helpers {
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 		) {
 			String line;
+			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			Date startDate =  formatter.parse(start);
+			Date endDate =  formatter.parse(end);
+			
 			List<String> lines = new ArrayList<>();
 			while ((line = bufferedReader.readLine()) != null) {
 				String time = line.substring(line.indexOf('[') + 1, line.indexOf(']'));
-				
-				if (start.compareTo(time) < 0 && end.compareTo(time) >= 0) {
+
+				Date t = formatter.parse(time);
+				if( (t.after(startDate)||t.equals(startDate))  && (t.before(endDate)||t.equals(endDate))) {
 					lines.add(line);
 				}
 			}
-			
+
 			return lines;
 		}
-		catch (IOException ex) {
+		catch (IOException | ParseException ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}

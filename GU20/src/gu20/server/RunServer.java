@@ -37,7 +37,7 @@ public class RunServer {
 	private static void runGUI() {
 		JFrame frame = new JFrame();
 		frame.setPreferredSize(new Dimension(640, 640));
-		
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.add(new ServerPanel());
 		frame.pack();
 		frame.setVisible(true);
