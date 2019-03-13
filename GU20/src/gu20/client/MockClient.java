@@ -19,10 +19,10 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import gu20.GUIController;
 import gu20.Helpers;
 import gu20.Message;
 import gu20.MockUser;
+import gu20.gui.GUIController;
 
 /**
  * A mock of how a client could be implemented, used for testing the Server.

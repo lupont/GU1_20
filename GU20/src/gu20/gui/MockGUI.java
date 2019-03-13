@@ -1,4 +1,4 @@
-package gu20;
+package gu20.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -34,6 +34,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import gu20.MockUser;
+
 /**
  * A mock for how the GUI might be implemented, used for testing GUIController
  * @author Alexander Libot
@@ -60,6 +62,11 @@ public class MockGUI extends JPanel implements GUIInterface {
 		this("Test Testsson", guiC);
 	}
 	
+	/**
+	 * Constructs a new GUI, initializes all the elements and puts them in a frame.
+	 * @param username Username of the person logged in
+	 * @param guiC Controller-instance to receive and send updates
+	 */
 	public MockGUI(String username, GUIController guiC) {
 		this.username = username;
 		this.controller = guiC;
@@ -67,6 +74,41 @@ public class MockGUI extends JPanel implements GUIInterface {
 		initGUI();
 	}
 	
+	/**
+	 * @inheritDoc
+	 */
+	public void viewNewMessage(MockUser sender, String message, ImageIcon image, String[] recipients) {
+		messagesPanel.addMessage(sender, message, image, recipients);
+		System.out.println("viewNewMessage: received message from " + sender);
+		updateUI();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public void addOnlineUsers(String[] onlineUsers) {
+		usersPanel.addOnlineUsers(onlineUsers);
+		updateUI();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public void addContacts(String[] contacts) {
+		usersPanel.addContacts(contacts);
+		updateUI();
+	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	public void addAvatar(ImageIcon avatar) {
+		titlePanel.addAvatar(avatar);
+	}
+	
+	/**
+	 * Initializes all panels in the GUI
+	 */
 	private void initGUI() {
 		this.setPreferredSize(new Dimension(700, 300));
 		setLayout(new BorderLayout());
@@ -83,6 +125,9 @@ public class MockGUI extends JPanel implements GUIInterface {
 		putInFrame();
 	}
 	
+	/**
+	 * Initializes a new frame and puts the main panel in the frame
+	 */
 	private void putInFrame() {
 		frame = new JFrame("Chatt Window");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -92,41 +137,9 @@ public class MockGUI extends JPanel implements GUIInterface {
 		frame.setVisible(true);
 	}
 	
-	public void viewNewMessage(MockUser sender, String message, ImageIcon image, String[] recipients) {
-		messagesPanel.addMessage(sender, message, image, recipients);
-		System.out.println("viewNewMessage: received message from " + sender);
-		updateUI();
-	}
-	
-	public void addOnlineUsers(String[] onlineUsers) {
-		usersPanel.addOnlineUsers(onlineUsers);
-		updateUI();
-	}
-	
-	public void addContacts(String[] contacts) {
-		usersPanel.addContacts(contacts);
-		updateUI();
-	}
-	
-	public void addContact(String contact) {
-		usersPanel.addContact(contact);
-		updateUI();
-	}
-	
-	public void removeContact(String contact) {
-		usersPanel.removeContact(contact);
-		updateUI();
-	}
-	
-	public void addAvatar(ImageIcon avatar) {
-		titlePanel.addAvatar(avatar);
-	}
-	
 	/**
 	 * Title panel to be displayed on top of page.
 	 * Contains program title and username.
-	 * @author Alexander Libot
-	 *
 	 */
 	private class TitlePanel extends JPanel implements MouseListener {
 		private JLabel lblTitle;
@@ -219,13 +232,13 @@ public class MockGUI extends JPanel implements GUIInterface {
 			contactPanel.addContacts(contacts);
 		}
 		
-		public void addContact(String contact) {
-			contactPanel.addContact(contact);
-		}
-		
-		public void removeContact(String contact) {
-			contactPanel.removeContact(contact);
-		}
+//		public void addContact(String contact) {
+//			contactPanel.addContact(contact);
+//		}
+//		
+//		public void removeContact(String contact) {
+//			contactPanel.removeContact(contact);
+//		}
 		
 		public void addOnlineUsers(String[] onlineUsers) {
 			onlinePanel.addOnlineUsers(onlineUsers);
@@ -290,13 +303,13 @@ public class MockGUI extends JPanel implements GUIInterface {
 			}
 		}
 		
-		public void addContact(String contact) {
-			listModel.addElement(contact);
-		}
-		
-		public void removeContact(String contact) {
-			listModel.removeElement(contact);
-		}
+//		public void addContact(String contact) {
+//			listModel.addElement(contact);
+//		}
+//		
+//		public void removeContact(String contact) {
+//			listModel.removeElement(contact);
+//		}
 
 		@Override
 		public void valueChanged(ListSelectionEvent e) {

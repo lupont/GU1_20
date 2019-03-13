@@ -1,6 +1,6 @@
 package testClasses;
 
-import gu20.GUIController;
+import gu20.gui.GUIController;
 
 public class TestClient {
 

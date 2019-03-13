@@ -2,7 +2,7 @@ package testClasses;
 
 import java.util.ArrayList;
 
-import gu20.GUIController;
+import gu20.gui.GUIController;
 import gu20.server.RunServer;
 
 public class TestSystem {

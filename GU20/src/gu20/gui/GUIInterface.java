@@ -1,6 +1,8 @@
-package gu20;
+package gu20.gui;
 
 import javax.swing.ImageIcon;
+
+import gu20.MockUser;
 
 /**
  * List of classes for a GUI to implement to be able to work with GUIController
@@ -16,12 +18,13 @@ public interface GUIInterface {
 	public void addOnlineUsers(String[] users);
 	
 	/**
-	 * Receive a new message.
-	 * @param sender Sender of message
-	 * @param text Text of message
-	 * @param recipients Recipients of message
+	 * Used to receive and display a new message in GUI
+	 * @param sender MockUser-object of the sender of the message
+	 * @param message The text of the message
+	 * @param image The image of the message
+	 * @param recipients A string-array of the recipients usernames
 	 */
-	public void viewNewMessage(MockUser sender, String text, ImageIcon image, String[] recipients);
+	public void viewNewMessage(MockUser sender, String message, ImageIcon image, String[] recipients);
 	
 	/**
 	 * Receive a list of contacts.
@@ -30,17 +33,9 @@ public interface GUIInterface {
 	public void addContacts(String[] contacts);
 	
 	/**
-	 * Don't implement, this will be removed.
-	 * @param contact
+	 * Adds a new avatar
+	 * @param avatar An imageicon object to add as avatar
 	 */
-	public void addContact(String contact);
-	
-	/**
-	 * Don't implement, this will be removed.
-	 * @param contact
-	 */
-	public void removeContact(String contact);
-	
 	public void addAvatar(ImageIcon avatar);
 	
 }

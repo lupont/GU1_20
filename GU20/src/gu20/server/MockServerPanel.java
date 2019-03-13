@@ -13,8 +13,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import gu20.GUIController;
 import gu20.Helpers;
+import gu20.gui.GUIController;
 
 public class MockServerPanel extends JPanel {
 	private JTextArea taLog;

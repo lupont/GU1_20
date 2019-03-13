@@ -1,4 +1,4 @@
-package gu20;
+package gu20.gui;
 
 import java.awt.Dimension;
 import java.awt.Font;

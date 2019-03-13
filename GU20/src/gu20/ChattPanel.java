@@ -9,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import gu20.gui.MockGUI;
+
 public class ChattPanel extends JPanel implements ActionListener {
 	private JButton btnAdd = new JButton("Add");
 	private JButton btnSend = new JButton("Send");
