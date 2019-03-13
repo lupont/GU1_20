@@ -11,7 +11,9 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
-import gu20.client.MockClient;
+import gu20.client.Client;
+import gu20.entities.Message;
+import gu20.entities.User;
 
 /**
  * Control-class for communication between GUI and client
@@ -21,10 +23,10 @@ import gu20.client.MockClient;
  */
 public class GUIController {
 	
-	private MockClient client;
-	private MockUser user;
+	private Client client;
+	private User user;
 	
-	private MockUser[] onlineUsers;
+	private User[] onlineUsers;
 	private String[] contacts;
 	
 	private GUIInterface gui;
@@ -96,7 +98,7 @@ public class GUIController {
 	 * Updates list of online users in gui.
 	 * @param users A list on online users
 	 */
-	public void onlineUsers(MockUser[] users) {
+	public void onlineUsers(User[] users) {
 		
 			onlineUsers = users;
 		
@@ -168,19 +170,19 @@ public class GUIController {
 	 * @param message
 	 */
 	public void sendMessage(String strMessage, List<String> recipientUsernames, File file) {
-		MockUser[] receivers = new MockUser[recipientUsernames.size()];
+		User[] receivers = new User[recipientUsernames.size()];
 		int counter = 0;
 
 		for (String recipientUsername : recipientUsernames) {
-			for (MockUser user : onlineUsers) {
+			for (User user : onlineUsers) {
 				if (recipientUsername.equals(user.getUsername()))
 					receivers[counter] = user;
 			}
 			if (receivers[counter] == null) {
-				receivers[counter] = new MockUser(recipientUsername, null);
+				receivers[counter] = new User(recipientUsername, null);
 			}
 			if (receivers[counter] == null)
-				receivers[counter] = new MockUser(recipientUsername, null);
+				receivers[counter] = new User(recipientUsername, null);
 			counter++;
 		}
 		
@@ -250,8 +252,8 @@ public class GUIController {
 			addresses.put(host, host);
 		}
 		
-		user = new MockUser(username, avatar);
-		client = new MockClient(user, addresses.get(host), port);
+		user = new User(username, avatar);
+		client = new Client(user, addresses.get(host), port);
 		client.setGUIController(this);
 		
 		openGUI();

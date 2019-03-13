@@ -22,13 +22,18 @@ import javax.swing.JTextField;
 import gu20.GUIController;
 import gu20.Helpers;
 
-public class MockServerPanel extends JPanel {
+/**
+ * A simple GUI for the server, fetching from the server's log file.
+ * @author Oskar Molander, Pontus Laos
+ *
+ */
+public class ServerPanel extends JPanel {
 	private JTextArea taLog;
-	private Server server;
-	
-	public MockServerPanel(Server server) {
-		this.server = server;
-		
+
+	/**
+	 * Constructs a new panel and begins fetching from the log file.
+	 */
+	public ServerPanel() {		
 		setLayout(new BorderLayout());
 		
 		JPanel pnlTimePickers = new JPanel();
@@ -73,9 +78,10 @@ public class MockServerPanel extends JPanel {
 			try (final RandomAccessFile file = new RandomAccessFile(Server.LOGGER_PATH, "r")) {
 				while (true) {
 					String line = file.readLine();
-					
+				    					
 					if (line != null) {
-						taLog.append(line + "\n");
+						String utf8 = new String(line.getBytes("ISO-8859-1"), "UTF-8");
+						taLog.append(utf8 + "\n");
 						taLog.setCaretPosition(taLog.getDocument().getLength());
 					}
 					else {

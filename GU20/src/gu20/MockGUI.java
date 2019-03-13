@@ -34,6 +34,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import gu20.entities.User;
+
 /**
  * A mock for how the GUI might be implemented, used for testing GUIController
  * @author Alexander Libot
@@ -92,7 +94,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 		frame.setVisible(true);
 	}
 	
-	public void viewNewMessage(MockUser sender, String message, ImageIcon image, String[] recipients) {
+	public void viewNewMessage(User sender, String message, ImageIcon image, String[] recipients) {
 		messagesPanel.addMessage(sender, message, image, recipients);
 		System.out.println("viewNewMessage: received message from " + sender);
 		updateUI();
@@ -414,7 +416,7 @@ public class MockGUI extends JPanel implements GUIInterface {
             add(new JScrollPane(messageList));
 		}
 		
-		public void addMessage(MockUser sender, String text, ImageIcon image, String[] recipients) {
+		public void addMessage(User sender, String text, ImageIcon image, String[] recipients) {
 			
             GridBagConstraints gbc2 = new GridBagConstraints();
             gbc2.gridwidth = GridBagConstraints.REMAINDER;
@@ -500,7 +502,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 		
 		private RecipientsPanel recipientsPanel;
 		
-		public Message(MockUser sender, String[] recipients) {
+		public Message(User sender, String[] recipients) {
 			this.recipients = recipients;
 			String strSender;
 			pnlSender = new JPanel();
@@ -539,7 +541,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 			add(pnlSender);
 		}
 		
-		public Message(MockUser sender, String message, String[] recipients) {
+		public Message(User sender, String message, String[] recipients) {
 			this(sender, recipients);
 			
 			lblMessage = new JLabel(message);
@@ -548,7 +550,7 @@ public class MockGUI extends JPanel implements GUIInterface {
 			add(pnlMessage);
 		}
 		
-		public Message(MockUser sender, ImageIcon image, String[] recipients) {
+		public Message(User sender, ImageIcon image, String[] recipients) {
 			this(sender, recipients);
 			
 			lblMessage = new JLabel(image);

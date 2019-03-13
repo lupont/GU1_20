@@ -3,10 +3,13 @@ package gu20;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import gu20.entities.Message;
+import gu20.entities.User;
+
 public class UnsentMessages {
 
 	
-	private HashMap<MockUser, ArrayList<Message>> unsentMessages;
+	private HashMap<User, ArrayList<Message>> unsentMessages;
 	
 	
 	public UnsentMessages() {
@@ -14,7 +17,7 @@ public class UnsentMessages {
 		unsentMessages = new HashMap<>();
 	}
 	
-	public synchronized ArrayList<Message> put(MockUser user, Message message){
+	public synchronized ArrayList<Message> put(User user, Message message){
 		
 		//first time
 		if(!unsentMessages.containsKey(user) || unsentMessages.get(user) == null) {
@@ -29,25 +32,25 @@ public class UnsentMessages {
 		return unsentMessages.put(user, messages);
 	}
 	
-	public synchronized ArrayList<Message> get(MockUser user){
+	public synchronized ArrayList<Message> get(User user){
 		ArrayList<Message> messages = unsentMessages.get(user);
 		
 		return unsentMessages.get(user);
 
 	}
 	
-	public synchronized ArrayList<Message> remove(MockUser user) {
+	public synchronized ArrayList<Message> remove(User user) {
 		ArrayList<Message> messages = unsentMessages.remove(user);
 		return messages;
 	}
 	
-	public synchronized ArrayList<Message> pop(MockUser user) {
+	public synchronized ArrayList<Message> pop(User user) {
 		ArrayList<Message> popped = unsentMessages.get(user);
 		unsentMessages.put(user, null);
 		return popped;
 	}
 	
-	public synchronized boolean containsKey(MockUser user) {
+	public synchronized boolean containsKey(User user) {
 		return unsentMessages.containsKey(user);
 	}
 }

@@ -5,24 +5,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import gu20.client.MockClient;
+import gu20.client.Client;
+import gu20.entities.User;
 
 public class Clients {
-	private HashMap<MockUser, Socket> clients;
+	private HashMap<User, Socket> clients;
 	
 	public Clients() {
 		clients = new HashMap<>();
 	}
 	
-	public synchronized void put(MockUser user, Socket socket) {
+	public synchronized void put(User user, Socket socket) {
 		clients.put(user, socket);
 	}
 	
-	public synchronized Socket get(MockUser user) {
+	public synchronized Socket get(User user) {
 		return clients.get(user);
 	}
 	
-	public synchronized boolean containsKey(MockUser user) {
+	public synchronized boolean containsKey(User user) {
 		return clients.containsKey(user);
 	}
 	
@@ -30,7 +31,7 @@ public class Clients {
 		return clients.containsValue(socket);
 	}
 	
-	public synchronized Socket remove(MockUser user) {
+	public synchronized Socket remove(User user) {
 		return clients.remove(user);
 	}
 	
@@ -42,7 +43,7 @@ public class Clients {
 		return clients.isEmpty();
 	}
 	
-	public Set<Map.Entry<MockUser, Socket>> entrySet() {
+	public Set<Map.Entry<User, Socket>> entrySet() {
 		return clients.entrySet();
 	}
 }

@@ -2,6 +2,8 @@ package gu20;
 
 import javax.swing.ImageIcon;
 
+import gu20.entities.User;
+
 /**
  * List of classes for a GUI to implement to be able to work with GUIController
  * @author Alexander
@@ -21,7 +23,7 @@ public interface GUIInterface {
 	 * @param text Text of message
 	 * @param recipients Recipients of message
 	 */
-	public void viewNewMessage(MockUser sender, String text, ImageIcon image, String[] recipients);
+	public void viewNewMessage(User sender, String text, ImageIcon image, String[] recipients);
 	
 	/**
 	 * Receive a list of contacts.
