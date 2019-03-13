@@ -35,7 +35,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import gu20.MockUser;
-
 /**
  * A mock for how the GUI might be implemented, used for testing GUIController
  * @author Alexander Libot
