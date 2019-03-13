@@ -37,7 +37,7 @@ import gu20.entities.User;
 
 /**
  * Miscellaneous helper methods.
- * @author lupont
+ * @author Pontus Laos
  *
  */
 public final class Helpers {	
@@ -59,6 +59,11 @@ public final class Helpers {
 	    catch (IOException e) {}
 	}
 	
+	/**
+	 * Reads a file with a FileReader and returns the lines in a List of Strings.
+	 * @param filePath The file to read.
+	 * @return A List<String>, each element containing a line of the file.
+	 */
 	public static final List<String> readFile(String filePath) {
 		try (
 			FileReader fileReader = new FileReader(filePath);
@@ -77,6 +82,13 @@ public final class Helpers {
 		}
 	}
 	
+	/**
+	 * Reads a log file between the given times.
+	 * @param filePath The log file to read.
+	 * @param start The start time.
+	 * @param end The end time.
+	 * @return A List<String>, each element containing a line of the file.
+	 */
 	public static final List<String> readLogBetween(String filePath, String start, String end) {
 		try (
 			FileReader fileReader = new FileReader(filePath);
@@ -127,6 +139,12 @@ public final class Helpers {
 	    return null;
 	}
 	
+	/**
+	 * Takes a generic array and a delimiter, and joins the elements with the delimiter between.
+	 * @param input The array.
+	 * @param delimiter The delimiter.
+	 * @return A String of the elements' toString()-method, with the delimiter between each element.
+	 */
 	public static <T> String joinArray(T[] input, String delimiter) {
 		if (input.length == 0) {
 			return "";
@@ -142,7 +160,11 @@ public final class Helpers {
 		}
 		return builder.toString();
 	}
-		
+	
+	/**
+	 * Prints every client in the object, with some decoration.
+	 * @param clients The object containing all the clients to print.
+	 */
 	public static synchronized void printClients(Clients clients) {
 		if (clients.isEmpty()) {
 			System.out.println("No clients to print.");
@@ -160,6 +182,11 @@ public final class Helpers {
 		System.out.println();
 	}
 	
+	/**
+	 * Checks which clients in the object are connected to the server.
+	 * @param clients The clients to filter.
+	 * @return A User[] with all the users belonging to connected clients.
+	 */
 	public static User[] getConnectedUsers(Clients clients) {
 		if (clients.isEmpty()) {
 			return new User[0];
@@ -235,6 +262,11 @@ public final class Helpers {
 		return image;		
 	}
 	
+	/**
+	 * Custom formatter for the server's log.
+	 * @author Pontus Laos
+	 *
+	 */
 	static class LogFormatter extends Formatter {
 		// TODO: change to DateTimeFormatter.
 		private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");

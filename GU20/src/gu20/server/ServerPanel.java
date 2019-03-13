@@ -50,14 +50,14 @@ public class ServerPanel extends JPanel {
 		tfEndTime.setToolTipText("YYYY-MM-dd HH:mm:ss.SSS");
 		
 		JButton btnFilterByTime = new JButton("Filter");
-		btnFilterByTime.addActionListener(event -> {
-			String start = tfStartTime.getText();
-			String end = tfEndTime.getText();
-			List<String> lines = Helpers.readLogBetween(Server.LOGGER_PATH, start, end);
-			for (String line : lines) {
-				System.out.println(line);
-			}
-		});
+//		btnFilterByTime.addActionListener(event -> {
+//			String start = tfStartTime.getText();
+//			String end = tfEndTime.getText();
+//			List<String> lines = Helpers.readLogBetween(Server.LOGGER_PATH, start, end);
+//			for (String line : lines) {
+//				System.out.println(line);
+//			}
+//		});
 		
 		pnlTimePickers.add(tfStartTime);
 		pnlTimePickers.add(tfEndTime);
