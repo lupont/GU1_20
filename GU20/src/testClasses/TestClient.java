@@ -1,6 +1,6 @@
 package testClasses;
 
-import gu20.GUIController;
+import gu20.gui.GUIController;
 
 /**
  * A class for testing a Client with GUI.

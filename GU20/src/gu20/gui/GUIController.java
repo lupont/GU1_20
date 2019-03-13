@@ -1,4 +1,4 @@
-package gu20;
+package gu20.gui;
 
 import java.awt.Image;
 import java.io.File;
@@ -11,9 +11,10 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 
-import gu20.client.Client;
+import gu20.Helpers;
 import gu20.entities.Message;
 import gu20.entities.User;
+import gu20.client.Client;
 
 /**
  * Control-class for communication between GUI and client
@@ -84,7 +85,7 @@ public class GUIController {
 	private void openGUI() {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				gui = new MockGUI(client.getUsername(), GUIController.this);
+				gui = new ClientGUI(client.getUsername(), GUIController.this);
 
 				gui.addOnlineUsers(Helpers.mockUsersToString(onlineUsers));
 				gui.addContacts(retrieveContacts(client.getUsername()));
@@ -208,7 +209,6 @@ public class GUIController {
 	 * @param message
 	 */
 	public void receiveMessage(Message message) {
-//		gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));
 		SwingUtilities.invokeLater(() -> {
 			System.out.println(this.user + " received message from " + message.getSender());
 			gui.viewNewMessage(message.getSender(), message.getText(), message.getImage(), Helpers.mockUsersToString(message.getRecipients()));			
@@ -233,7 +233,7 @@ public class GUIController {
 	}
 	
 	/**
-	 * Login-function. Receives users username from textfield and creates a new MockUser-object.
+	 * Login-function. Receives users username from textfield and creates a new User-object.
 	 * Connects to server.
 	 * Opens GUI-window.
 	 * TODO Check if username is already taken, and if unsent messages need to be imported

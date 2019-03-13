@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import gu20.GUIController;
+import gu20.gui.GUIController;
 import gu20.Helpers;
 import gu20.entities.Message;
 import gu20.entities.User;
