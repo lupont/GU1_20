@@ -19,8 +19,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import gu20.GUIController;
 import gu20.Helpers;
+import gu20.gui.GUIController;
 
 /**
  * A simple GUI for the server, fetching from the server's log file.
