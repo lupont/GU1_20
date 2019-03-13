@@ -30,7 +30,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -129,7 +128,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 	 */
 	private void putInFrame() {
 		frame = new JFrame("Chatt Window");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.add(this);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
@@ -177,6 +176,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		/*
 		 * Removed access to atm for not working
 		 */
+		@SuppressWarnings("unused")
 		private void chooseFile() {
 			JFileChooser fc = new JFileChooser();
 			int returnValue = fc.showOpenDialog(this);
@@ -186,8 +186,6 @@ public class ClientGUI extends JPanel implements GUIInterface {
 			}
 			
 		}
-
-
 
 		@Override
 		public void mouseReleased(MouseEvent e) {

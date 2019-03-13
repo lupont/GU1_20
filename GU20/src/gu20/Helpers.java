@@ -214,12 +214,17 @@ public final class Helpers {
 	 */
 	public static Image getScaledImage(Image srcImg, int height) {
 		
+		System.out.println("Original size: " + srcImg.getWidth(null) + "x" + srcImg.getHeight(null));
+		
 		if (srcImg == null || height < 1)
 			return null;
 		
-		double ratio = (double) (srcImg.getHeight(null)) / srcImg.getWidth(null);
+		double ratio = (double) (srcImg.getWidth(null)) / srcImg.getHeight(null);
+		System.out.println("ratio: " + ratio);
 
 		int width = (int)(ratio * height);
+		
+		System.out.println("New size: " + width + "x" + height);
 		
 	    BufferedImage resizedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 	    Graphics2D g2 = resizedImg.createGraphics();
