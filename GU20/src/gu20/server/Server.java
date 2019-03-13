@@ -262,16 +262,14 @@ public class Server implements Runnable {
 					MockUser user = (MockUser) obj;
 					
 					synchronized (clientListeners) {
-						if (!clientListeners.stream().anyMatch(cl -> user.equals(cl.getUser()))) {
-							Iterator<ClientListener> iterator = clientListeners.iterator();
+						Iterator<ClientListener> iterator = clientListeners.iterator();
+						
+						while (iterator.hasNext()) {
+							ClientListener cl = iterator.next();
 							
-							while (iterator.hasNext()) {
-								ClientListener cl = iterator.next();
-								
-								if (user.equals(cl.getUser())) {
-									iterator.remove();
-									System.out.println("removed from clientlisteners: " + clientListeners.size());
-								}
+							if (user.equals(cl.getUser())) {
+								iterator.remove();
+								System.out.println("removed from clientlisteners: " + clientListeners.size());
 							}
 						}
 						
