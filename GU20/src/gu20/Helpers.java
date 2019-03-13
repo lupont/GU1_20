@@ -115,10 +115,14 @@ public final class Helpers {
 
 			return lines;
 		}
-		catch (IOException | ParseException ex) {
-			ex.printStackTrace();
+		catch (IOException e) {
 			return null;
 		}
+		catch (ParseException e) {
+			System.out.println("Invalid filter input");
+			return null;
+		}
+
 	}
 	
 	/**

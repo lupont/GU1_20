@@ -62,9 +62,11 @@ public class ServerPanel extends JPanel {
 			String end = tfEndTime.getText();
 			List<String> lines;
 			lines = Helpers.readLogBetween(Server.LOGGER_PATH, start, end);
-			taLog.setText("");
-			for (String line : lines) {
-				taLog.append(line + "\n");
+			if(lines != null) {
+				taLog.setText("");
+				for (String line : lines) {
+					taLog.append(line + "\n");
+				}
 			}
 			
 		});
