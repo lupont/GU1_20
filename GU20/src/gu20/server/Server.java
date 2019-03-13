@@ -56,9 +56,9 @@ public class Server implements Runnable {
 	
 	@Override
 	public void run() {
-		LOGGER.log(Level.INFO, "Server is waiting for clients...");
+		LOGGER.log(Level.INFO, "Server is up and running at " + serverSocket.getInetAddress().getHostAddress() + ":" + serverSocket.getLocalPort() + ".");
 
-		while (true) {
+		while (!Thread.interrupted()) {
 			try {
 				Socket socket = serverSocket.accept();
 				
@@ -72,7 +72,24 @@ public class Server implements Runnable {
 			catch (IOException ex) {
 				System.out.println("IO");
 			}
-		}	
+		}
+	}
+	
+	public void close() {
+		if (server != null) {
+			synchronized (clientListeners) {
+				for (ClientListener listener : clientListeners) {
+					listener.interrupt();
+					listener = null;
+				}
+				clientListeners.clear();
+			}
+			
+			server.interrupt();
+			server = null;
+			
+			LOGGER.log(Level.INFO, "Server stopped.");
+		}
 	}
 	
 	private void updateUserList(MockUser user, String action) {
@@ -89,8 +106,6 @@ public class Server implements Runnable {
 							os.writeObject(user);
 							os.writeUTF(action);
 							os.writeObject(connectedUsers);
-							System.out.println(listener.getUser() == null ? "Server sent update, but user had not been set." : "Server sent update to " + listener.getUser());
-							System.out.println(Helpers.joinArray(connectedUsers, ", "));
 							os.flush();
 						}
 						catch (IOException ex) {}
@@ -143,6 +158,12 @@ public class Server implements Runnable {
 					System.out.println(listener.getUser().getUsername() + " socket is closed"); 
 					unsentMessages.put(listener.getUser(), message);
 				}
+				
+				LOGGER.log(Level.INFO, String.format(
+					"Server sent message from %s to [%s]", 
+					message.getSender().getUsername(), 
+					Helpers.joinArray(message.getRecipients(), ", ")
+				));
 			}
 			
 //			for (MockUser recipient : message.getRecipients()) {
@@ -239,18 +260,17 @@ public class Server implements Runnable {
 					// ... the next part of the request should contain a User object.
 					Object obj = inputStream.readObject();
 					MockUser user = (MockUser) obj;
+					LOGGER.log(Level.INFO, String.format("%s (@%s) connected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 					
 					synchronized (clientListeners) {
-						if (!clientListeners.stream().anyMatch(cl -> user.equals(cl.getUser()))) {
-							Iterator<ClientListener> iterator = clientListeners.iterator();
+						Iterator<ClientListener> iterator = clientListeners.iterator();
+						
+						while (iterator.hasNext()) {
+							ClientListener cl = iterator.next();
 							
-							while (iterator.hasNext()) {
-								ClientListener cl = iterator.next();
-								
-								if (user.equals(cl.getUser())) {
-									iterator.remove();
-									System.out.println("removed from clientlisteners: " + clientListeners.size());
-								}
+							if (user.equals(cl.getUser())) {
+								iterator.remove();
+								System.out.println("removed from clientlisteners: " + clientListeners.size());
 							}
 						}
 						
@@ -261,10 +281,7 @@ public class Server implements Runnable {
 					if (clients.get(user) == null) {
 						clients.put(user, socket);
 						this.user = user;
-						System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") connected to the server.");
-//						Helpers.printClients(clients);
-						
-						updateUserList(user, "CONNECTED");	
+						updateUserList(user, "CONNECTED");
 					}
 
 					if (unsentMessages.containsKey(user)) {
@@ -272,7 +289,7 @@ public class Server implements Runnable {
 					}
 				}
 				
-				while (true) {
+				while (!Thread.interrupted()) {
 					// If it is a DISCONNECT request...
 					try {
 						String response = inputStream.readUTF();
@@ -284,8 +301,7 @@ public class Server implements Runnable {
 							MockUser user = (MockUser) obj;
 							
 							clients.put(user, null);
-							System.out.println(user.getUsername() + " at (" + socket.getInetAddress().toString() + ") disconnected from the server.");
-//							Helpers.printClients(clients);
+							LOGGER.log(Level.INFO, String.format("%s (@%s) disconnected to the server.", user.getUsername(), socket.getInetAddress().toString()));
 							updateUserList(user, "DISCONNECTED");
 //							clientListeners.remove(this);
 							
@@ -305,22 +321,20 @@ public class Server implements Runnable {
 							sendMessage(messages.get(0));
 	
 						}
+						
+						Thread.sleep(500);
 					}
-					catch (EOFException ex) {
+					catch (EOFException | SocketException ex) {
 						continue;
 					}
-					catch (SocketException ex) {
-						continue;
+					catch (InterruptedException ex) {
+						break;
 					}
 				}
 			}
-			catch (EOFException ex) {
+			catch (IOException | ClassNotFoundException ex) {
 				ex.printStackTrace();
 			}
-			catch (IOException ex) {
-				ex.printStackTrace();
-			}
-			catch (ClassNotFoundException ex) {}
 			finally {
 				try {
 					outputStream.close();

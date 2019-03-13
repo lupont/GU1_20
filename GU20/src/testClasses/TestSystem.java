@@ -24,9 +24,9 @@ public class TestSystem {
 //		}
 
 //		new GUIController("pontus", "localhost");
-		new GUIController();
-		new GUIController("oskar", "localhost");
-		new GUIController("pärla", "localhost");
+//		new GUIController();
+//		new GUIController("oskar", "localhost");
+//		new GUIController("pärla", "localhost");
 		
 		
 //		String[] names = { "alex", "pontus", "oskar", "p�rla", "racquel", "sara", "foobar", "johndoe", "baz", "johnsmith" };

@@ -1,6 +1,8 @@
 package gu20.server;
 
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
@@ -21,8 +23,13 @@ public class RunServer {
 		frame.setPreferredSize(new Dimension(640, 640));
 		
 		frame.add(new MockServerPanel(server));
-		
 		frame.pack();
 		frame.setVisible(true);
+		
+		frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+            	server.close();
+            }
+        });
 	}
 }
