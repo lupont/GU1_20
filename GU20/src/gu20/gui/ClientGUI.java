@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -125,6 +126,8 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		add(messagePanel, BorderLayout.CENTER);
 		
 		putInFrame();
+		
+		
 	}
 	
 	/**
@@ -135,9 +138,10 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.add(this);
 		frame.pack();
+		frame.setIconImage(new ImageIcon("res/images/icon.png").getImage());
 		frame.setLocationRelativeTo(null);
 		frame.addWindowListener(new CloseListener());
-		frame.setVisible(true);
+		frame.setVisible(true);	
 	}
 	
 	/**
@@ -366,6 +370,8 @@ public class ClientGUI extends JPanel implements GUIInterface {
 	 */
 	private class OnlinePanel extends AbstractUserPanel {
 		
+		private boolean playSound = false;
+		
 		/**
 		 * Creates a new OnlinePanel. Calls superclass-constructor
 		 * @param header Title of the list
@@ -384,7 +390,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 			
 			if (users != null) {
 				for (String user : users) {
-					if (!user.equals(username))
+					if (!user.equals(username)) 
 						listModel.addElement(user);
 				}
 				ArrayList<String> list = Collections.list(listModel.elements()); // get a collection of the elements in the model
@@ -392,6 +398,12 @@ public class ClientGUI extends JPanel implements GUIInterface {
 				listModel.clear(); // remove all elements
 				for(String s:list){ listModel.addElement(s); } // add elements
 			}
+			
+			//Don't play sound when you login
+			if (playSound)
+				Helpers.play("res/sounds/login.wav");
+			else
+				playSound = true;
 		}
 
 		/**
@@ -536,6 +548,10 @@ public class ClientGUI extends JPanel implements GUIInterface {
 				Message imageMessage = new Message(sender, image, recipients);
 				messages.add(imageMessage);
 				messageList.add(imageMessage, gbc2, -1); //Adds messages to the bottom
+			}
+			
+			if (!username.equals(sender.getUsername())) {
+				Helpers.play("res/sounds/message.wav");
 			}
 		}
 	}
@@ -730,53 +746,59 @@ public class ClientGUI extends JPanel implements GUIInterface {
 					recipientsPanel.dispose();
 		}
 		
-		//Not used
+		/**
+		 * Opens an image fullsize 
+		 */
 		public void mouseClicked(MouseEvent e) {
 			if (e.getSource().equals(lblMessage) && fullsizePicture != null) {
-				
-				Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-				double width = screenSize.getWidth();
-				double height = screenSize.getHeight();
-				
-				ImageIcon displayPicture;
-				if (fullsizePicture.getIconWidth() > width || fullsizePicture.getIconHeight() > height) {
-					displayPicture = new ImageIcon(Helpers.getScaledImage(fullsizePicture.getImage(), (int)height));
-				} else {
-					displayPicture = fullsizePicture;
-				}
-	
-				JLabel lblPicture = new JLabel(displayPicture);
-				JPanel pnlPicture = new JPanel();
-				pnlPicture.add(lblPicture);
-				
-				JFrame frame = new JFrame();
-				
-				pnlPicture.addMouseListener(new MouseListener() {
-
-					
-					@Override
-					public void mousePressed(MouseEvent e) {
-						frame.dispose();
-					}
-
-					public void mouseClicked(MouseEvent e) {}
-					public void mouseReleased(MouseEvent e) {}
-					public void mouseEntered(MouseEvent e) {}
-					public void mouseExited(MouseEvent e) {}
-					
-				});
-				
-				
-				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-				frame.add(pnlPicture);
-				frame.pack();
-				frame.setLocationRelativeTo(null);
-				frame.setVisible(true);
-				
+				viewPictureFullSize();
 			}
 		}
+		
+		//Not used
 		public void mousePressed(MouseEvent e) {}
 		public void mouseReleased(MouseEvent e) {}
+		
+		private void viewPictureFullSize() {
+			
+			Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+			double width = screenSize.getWidth();
+			double height = screenSize.getHeight();
+			
+			ImageIcon displayPicture;
+			if (fullsizePicture.getIconWidth() > width || fullsizePicture.getIconHeight() > height) {
+				displayPicture = new ImageIcon(Helpers.getScaledImage(fullsizePicture.getImage(), (int)height));
+			} else {
+				displayPicture = fullsizePicture;
+			}
+
+			JLabel lblPicture = new JLabel(displayPicture);
+			JPanel pnlPicture = new JPanel();
+			pnlPicture.add(lblPicture);
+			
+			JFrame frame = new JFrame();
+			
+			pnlPicture.addMouseListener(new MouseListener() {
+
+				
+				@Override
+				public void mousePressed(MouseEvent e) {
+					frame.dispose();
+				}
+
+				public void mouseClicked(MouseEvent e) {}
+				public void mouseReleased(MouseEvent e) {}
+				public void mouseEntered(MouseEvent e) {}
+				public void mouseExited(MouseEvent e) {}
+			});
+
+			frame.setUndecorated(true);
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+			frame.add(pnlPicture);
+			frame.pack();
+			frame.setLocationRelativeTo(null);
+			frame.setVisible(true);
+		}
 	}
 	
 	/**

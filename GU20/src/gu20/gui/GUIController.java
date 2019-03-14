@@ -43,6 +43,7 @@ public class GUIController {
 		addresses.put("local", "localhost");
 		addresses.put("atlex-server", "192.168.1.100");
 		addresses.put("pontus", "10.2.4.70");
+		
 		openLoginWindow();
 	}
 	

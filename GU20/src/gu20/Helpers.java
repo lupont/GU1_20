@@ -32,8 +32,12 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 
 import gu20.entities.User;
+import gu20.gui.GUIController;
 
 /**
  * Miscellaneous helper methods.
@@ -293,6 +297,16 @@ public final class Helpers {
 	        builder.append(System.lineSeparator());
 
 	        return builder.toString();
+	    }
+	}
+	
+	public static void play(String filename) {
+	    try {
+	        Clip clip = AudioSystem.getClip();
+	        clip.open(AudioSystem.getAudioInputStream(new File(filename)));
+	        clip.start();
+	    } catch (Exception ex) {
+	        System.out.println("Couldn't find audiofile");
 	    }
 	}
 }
