@@ -8,10 +8,13 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import gu20.Helpers;
 import gu20.entities.User;
 /**
  * A mock for how the GUI might be implemented, used for testing GUIController
@@ -132,6 +136,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		frame.add(this);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
+		frame.addWindowListener(new CloseListener());
 		frame.setVisible(true);
 	}
 	
@@ -447,7 +452,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource().equals(btnLogout)) {
-				controller.logout();
+//				controller.logout();
 				frame.dispose();
 			} else if (e.getSource().equals(btnAddContact)) {
 				if (selectedUsers != null) {
@@ -548,6 +553,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 */
 		public InputPanel() {
 			tfInput = new JTextField();
+			tfInput.addActionListener(this);
 			btnSend = new JButton("Send");
 			btnSend.addActionListener(this);
 			
@@ -567,7 +573,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 */
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource().equals(btnSend)) { //If send button is pressed
+			if (e.getSource().equals(btnSend) || e.getSource().equals(tfInput)) { //If send button is pressed
 				String message = tfInput.getText();
 
 				if (selectedUsers == null)
@@ -575,6 +581,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 
 				controller.sendMessage(message, selectedUsers, image);
 				image = null;
+				tfInput.setText(null);
 				btnImage.setText("Choose image");
 				
 			} else if (e.getSource().equals(btnImage)) { //If chose image button is pressed
@@ -619,6 +626,8 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		private String[] recipients;
 		
 		private RecipientsPanel recipientsPanel;
+		
+		private ImageIcon fullsizePicture;
 		
 		/**
 		 * Private constructor to be called from other constructors.
@@ -689,7 +698,12 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		public Message(User sender, ImageIcon image, String[] recipients) {
 			this(sender, recipients);
 			
-			lblMessage = new JLabel(image);
+			fullsizePicture = image;
+			
+			ImageIcon rescaledImage = new ImageIcon(Helpers.getScaledImage(image.getImage(), 80));
+			lblMessage = new JLabel(rescaledImage);
+			lblMessage.addMouseListener(this);
+			
 			pnlMessage.add(lblMessage);
 			
 			add(pnlMessage);
@@ -700,9 +714,11 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 */
 		@Override
 		public void mouseEntered(MouseEvent e) {
-			Point point = pnlSender.getLocationOnScreen();
-			point.setLocation(point.getX(), point.getY()+pnlSender.getHeight());
-			recipientsPanel = new RecipientsPanel(recipients, point);
+			if (e.getSource().equals(pnlSender)) {
+				Point point = pnlSender.getLocationOnScreen();
+				point.setLocation(point.getX(), point.getY() + pnlSender.getHeight());
+				recipientsPanel = new RecipientsPanel(recipients, point);
+			}
 		}
 		
 		/**
@@ -710,13 +726,76 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 */
 		@Override
 		public void mouseExited(MouseEvent e) {
-			recipientsPanel.dispose();
+			if (e.getSource().equals(pnlSender))
+					recipientsPanel.dispose();
 		}
 		
 		//Not used
-		public void mouseClicked(MouseEvent e) {}
+		public void mouseClicked(MouseEvent e) {
+			if (e.getSource().equals(lblMessage) && fullsizePicture != null) {
+				
+				Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+				double width = screenSize.getWidth();
+				double height = screenSize.getHeight();
+				
+				ImageIcon displayPicture;
+				if (fullsizePicture.getIconWidth() > width || fullsizePicture.getIconHeight() > height) {
+					displayPicture = new ImageIcon(Helpers.getScaledImage(fullsizePicture.getImage(), (int)height));
+				} else {
+					displayPicture = fullsizePicture;
+				}
+	
+				JLabel lblPicture = new JLabel(displayPicture);
+				JPanel pnlPicture = new JPanel();
+				pnlPicture.add(lblPicture);
+				
+				JFrame frame = new JFrame();
+				
+				pnlPicture.addMouseListener(new MouseListener() {
+
+					
+					@Override
+					public void mousePressed(MouseEvent e) {
+						frame.dispose();
+					}
+
+					public void mouseClicked(MouseEvent e) {}
+					public void mouseReleased(MouseEvent e) {}
+					public void mouseEntered(MouseEvent e) {}
+					public void mouseExited(MouseEvent e) {}
+					
+				});
+				
+				
+				frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+				frame.add(pnlPicture);
+				frame.pack();
+				frame.setLocationRelativeTo(null);
+				frame.setVisible(true);
+				
+			}
+		}
 		public void mousePressed(MouseEvent e) {}
 		public void mouseReleased(MouseEvent e) {}
+	}
+	
+	/**
+	 * Logs out if user closes window
+	 */
+	private class CloseListener implements WindowListener {
+
+		@Override
+		public void windowClosed(WindowEvent e) {
+			controller.logout();
+		}
+
+		//Not used
+		public void windowOpened(WindowEvent e) {}
+		public void windowClosing(WindowEvent e) {}
+		public void windowIconified(WindowEvent e) {}
+		public void windowDeiconified(WindowEvent e) {}
+		public void windowActivated(WindowEvent e) {}
+		public void windowDeactivated(WindowEvent e) {}
 	}
 	
 }

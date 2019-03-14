@@ -192,8 +192,9 @@ public class GUIController {
 		if (file != null) {
 			try {
 				Image image = ImageIO.read(file);
-				System.out.println(image.getHeight(null) + "x" + image.getWidth(null));
-				imageIcon = new ImageIcon(Helpers.getScaledImage(image, 80));
+				imageIcon = new ImageIcon(image);
+//				System.out.println(image.getHeight(null) + "x" + image.getWidth(null));
+//				imageIcon = new ImageIcon(Helpers.getScaledImage(image, 80));
 			} catch (IOException ex) {
 				
 			}
