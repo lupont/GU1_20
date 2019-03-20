@@ -51,9 +51,9 @@ public class ServerPanel extends JPanel {
 		catch (Exception ex) {}
 		
 		JTextField tfStartTime = new JTextField();
-		tfStartTime.setToolTipText("2019-03-12");
+		tfStartTime.setToolTipText("YYYY-MM-dd HH:mm:s");
 		JTextField tfEndTime = new JTextField();
-		tfEndTime.setToolTipText("YYYY-MM-dd");
+		tfEndTime.setToolTipText("YYYY-MM-dd HH:mm:ss");
 		
 	
 		JButton btnFilterByTime = new JButton("Filter");

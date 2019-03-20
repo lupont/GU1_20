@@ -99,9 +99,10 @@ public final class Helpers {
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
 		) {
 			String line;
-			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+			DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date startDate =  formatter.parse(start);
 			Date endDate =  formatter.parse(end);
+//			System.out.println(startDate + "\r\n" + endDate);
 			
 			List<String> lines = new ArrayList<>();
 			while ((line = bufferedReader.readLine()) != null) {
