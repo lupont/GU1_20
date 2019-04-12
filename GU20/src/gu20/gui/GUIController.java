@@ -42,6 +42,7 @@ public class GUIController {
 	public GUIController() {
 		addresses.put("local", "localhost");
 		addresses.put("atlex-server", "192.168.1.100");
+		addresses.put("test", "10.2.4.169");
 		openLoginWindow();
 	}
 	
@@ -175,9 +176,11 @@ public class GUIController {
 		int counter = 0;
 
 		for (String recipientUsername : recipientUsernames) {
-			for (User user : onlineUsers) {
-				if (recipientUsername.equals(user.getUsername()))
-					receivers[counter] = user;
+//			if (onlineUsers != null) {
+				for (User user : onlineUsers) {
+					if (recipientUsername.equals(user.getUsername()))
+						receivers[counter] = user;
+//				} 
 			}
 			if (receivers[counter] == null) {
 				receivers[counter] = new User(recipientUsername, null);

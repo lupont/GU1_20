@@ -92,7 +92,9 @@ public class Client implements Runnable {
 		String[] contacts = null;
 		
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"))) {
-			int length = Integer.parseInt(br.readLine());
+			String input = br.readLine();
+			
+			int length = input == null ? 0 : Integer.parseInt(input);
 			contacts = new String[length];
 			
 			String contact = br.readLine();
@@ -101,7 +103,7 @@ public class Client implements Runnable {
 				contacts[index++] = contact;
 				contact = br.readLine();
 			}	
-		} catch (IOException ex) {
+		} catch (IOException | NumberFormatException e) {
 			//Empty catch lol
 		}	
 		return contacts;
@@ -116,10 +118,14 @@ public class Client implements Runnable {
 		String filename = "res/contacts/" + username + ".txt";
 		
 		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename),"UTF-8" ) )) {
-			bw.write(String.valueOf(contacts.length));
-			for (String contact : contacts) {
-				bw.newLine();
-				bw.write(contact);
+			int length = contacts == null ? 0 : contacts.length;
+			bw.write(String.valueOf(length));
+			
+			if (contacts != null) {
+				for (String contact : contacts) {
+					bw.newLine();
+					bw.write(contact);
+				} 
 			}
 			bw.flush();
 			
@@ -141,14 +147,14 @@ public class Client implements Runnable {
 			outputStream.writeUTF("CONNECT");
 			outputStream.writeObject(user);
 			outputStream.flush();
+			
+			listen();
 		}
 		catch (IOException ex) {
 			System.out.println("IO exception lol");
 			ex.printStackTrace();
 		}
-		finally {
-			listen();
-		}
+		
 	}
 	
 	/**
