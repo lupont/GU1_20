@@ -490,7 +490,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 	 * Class to show messages
 	 */
 	private class MessagesPanel extends JPanel {
-		private ArrayList<Message> messages;
+		private ArrayList<DisplayMessage> messages;
 		private JPanel messageList;
 		
 		/**
@@ -524,13 +524,13 @@ public class ClientGUI extends JPanel implements GUIInterface {
             gbc2.fill = GridBagConstraints.HORIZONTAL;
 			
 			if (!text.equals("")) {
-				Message textMessage = new Message(sender, text, recipients);
+				DisplayMessage textMessage = new DisplayMessage(sender, text, recipients);
 				messages.add(textMessage);
 				messageList.add(textMessage, gbc2, -1); //Adds messages to the bottom
 			}
             
 			if (image != null) {
-				Message imageMessage = new Message(sender, image, recipients);
+				DisplayMessage imageMessage = new DisplayMessage(sender, image, recipients);
 				messages.add(imageMessage);
 				messageList.add(imageMessage, gbc2, -1); //Adds messages to the bottom
 			}
@@ -610,7 +610,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 	/**
 	 * A panel with message to be displayed in MessagePanel
 	 */
-	private class Message extends JPanel implements MouseListener {
+	private class DisplayMessage extends JPanel implements MouseListener {
 		private JLabel lblSender;
 		private JLabel lblMessage;
 		private JLabel lblAvatar;
@@ -628,7 +628,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 * @param sender The sender of the message
 		 * @param recipients The recipients of the message
 		 */
-		private Message(User sender, String[] recipients) {
+		private DisplayMessage(User sender, String[] recipients) {
 			this.recipients = recipients;
 			String strSender;
 			pnlSender = new JPanel();
@@ -673,7 +673,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 * @param message The message to be displayed
 		 * @param recipients The recipients of the message
 		 */
-		public Message(User sender, String message, String[] recipients) {
+		public DisplayMessage(User sender, String message, String[] recipients) {
 			this(sender, recipients);
 			
 			lblMessage = new JLabel(message);
@@ -688,7 +688,7 @@ public class ClientGUI extends JPanel implements GUIInterface {
 		 * @param image The image to be displayed
 		 * @param recipients The recipients of the message
 		 */
-		public Message(User sender, ImageIcon image, String[] recipients) {
+		public DisplayMessage(User sender, ImageIcon image, String[] recipients) {
 			this(sender, recipients);
 			
 			lblMessage = new JLabel(image);

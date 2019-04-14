@@ -116,11 +116,16 @@ public class Client implements Runnable {
 		String filename = "res/contacts/" + username + ".txt";
 		
 		try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename),"UTF-8" ) )) {
-			bw.write(String.valueOf(contacts.length));
-			for (String contact : contacts) {
-				bw.newLine();
-				bw.write(contact);
+			int length = contacts == null ? 0 : contacts.length;
+			bw.write(String.valueOf(length));
+			
+			if (length != 0) {
+				for (String contact : contacts) {
+					bw.newLine();
+					bw.write(contact);
+				}
 			}
+			
 			bw.flush();
 			
 		} catch (IOException ex) {

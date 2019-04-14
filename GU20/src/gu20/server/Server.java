@@ -1,16 +1,12 @@
 package gu20.server;
 
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,7 +23,7 @@ import gu20.Helpers;
  *
  */
 public class Server implements Runnable {
-	private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
+	public static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 	public static final String LOGGER_PATH = "logs/" + Server.class.getName() + ".log";
 	
 	private Clients clients;
@@ -36,7 +32,7 @@ public class Server implements Runnable {
 	private ServerSocket serverSocket;
 	
 	private Thread server = new Thread(this);
-	private List<ClientListener> clientListeners;
+	private SynchronizedList<ClientListener> clientListeners;
 
 	/**
 	 * Creates server socket and starts the server thread.
@@ -46,7 +42,7 @@ public class Server implements Runnable {
 		Helpers.addFileHandler(LOGGER, LOGGER_PATH);
 		
 		clients = new Clients();
-		clientListeners = new ArrayList<>();
+		clientListeners = new SynchronizedList<>();
 		unsentMessages = new UnsentMessages();
 		
 		try {
@@ -66,7 +62,7 @@ public class Server implements Runnable {
 			try {
 				Socket socket = serverSocket.accept();
 				
-				ClientListener clientListener = new ClientListener(socket);
+				ClientListener clientListener = new ClientListener(socket, this);
 				clientListener.start();
 			}
 			catch (IOException ex) {
@@ -80,22 +76,20 @@ public class Server implements Runnable {
 	 * @param user The user who most recently connected or disconnected.
 	 * @param action What the user did, "CONNECTED" if the user connected, "DISCONNECTED" if they disconnected.
 	 */
-	private void updateUserList(User user, String action) {
+	public void updateUserList(User user, String action) {
 		User[] connectedUsers = Helpers.getConnectedUsers(clients);
 		
 		ObjectOutputStream os;
-		synchronized (clientListeners) {
-			for (ClientListener listener : clientListeners) {
-				try {
-					os = listener.getOutputStream();
-					os.writeUTF("UPDATE");
-					os.writeObject(user);
-					os.writeUTF(action);
-					os.writeObject(connectedUsers);
-					os.flush();
-				}
-				catch (IOException ex) {}
+		for (ClientListener listener : clientListeners) {
+			try {
+				os = listener.getOutputStream();
+				os.writeUTF("UPDATE");
+				os.writeObject(user);
+				os.writeUTF(action);
+				os.writeObject(connectedUsers);
+				os.flush();
 			}
+			catch (IOException ex) {}
 		}
 	}
 	
@@ -103,7 +97,7 @@ public class Server implements Runnable {
 	 * Sends a message to its recipients.
 	 * @param message The message to be sent. 
 	 */
-	private void sendMessage(Message message) {
+	public void sendMessage(Message message) {
 		ObjectOutputStream os;
 		
 		ArrayList<User> recipients = new ArrayList<>();
@@ -158,10 +152,16 @@ public class Server implements Runnable {
 	 * Sends all messages that were sent to a user when they were disconnected.
 	 * @param listener The listener of the user who should receive the messages.
 	 */
-	private void handleUnsentMessages(ClientListener listener) {
+	public void handleUnsentMessages(ClientListener listener) {
+		User user = listener.getUser();
+		
+		if (!unsentMessages.containsKey(user)) {
+			return;
+		}
+		
 		try {
 			ObjectOutputStream os = listener.getOutputStream();
-			ArrayList<Message> messages = unsentMessages.remove(listener.getUser());
+			ArrayList<Message> messages = unsentMessages.remove(user);
 			
 			if (messages != null && messages.size() > 0) {
 				os.writeUTF("MESSAGE");
@@ -170,147 +170,51 @@ public class Server implements Runnable {
 				
 				os.flush();
 				
-				System.out.println("Sent unsent messages to " + listener.getUser());
+				System.out.println("Sent unsent messages to " + user);
 			}
 		}
 		catch (IOException ex) {}
 	}
 	
 	/**
-	 * Handles the communication with a client.
-	 * @author Oskar Molander, Pontus Laos
-	 *
+	 * Checks if there are any listeners of the given user, and removes them before adding a new one.
+	 * @param user The user to check for.
+	 * @param listener The listener to add.
 	 */
-	private class ClientListener extends Thread {
-		private Socket socket;
-		private ObjectOutputStream outputStream;
-		private ObjectInputStream inputStream;
+	public void clearCache(User user, ClientListener listener) {
+		Iterator<ClientListener> iterator = clientListeners.iterator();
 		
-		private User user;
-		
-		/**
-		 * @return The socket connected to the client.
-		 */
-		public Socket getSocket() {
-			return socket;
-		}
-		
-		/**
-		 * Constructs a new ClientListener and creates input and output streams from the given socket.
-		 * @param socket The socket of which to create the streams.
-		 */
-		public ClientListener(Socket socket) {
-			this.socket = socket;
+		while (iterator.hasNext()) {
+			ClientListener cl = iterator.next();
 			
-			try {
-				outputStream = new ObjectOutputStream(socket.getOutputStream());
-				inputStream = new ObjectInputStream(socket.getInputStream());
-			}
-			catch (IOException ex) {
-				System.out.println("Error initializing the streams.");
+			if (user.equals(cl.getUser())) {
+				iterator.remove();
+				System.out.println("removed from clientlisteners: " + clientListeners.size());
 			}
 		}
 		
-		/**
-		 * @return The user the client is connected as.
-		 */
-		public User getUser() {
-			return user;
-		}
-		
-		/**
-		 * @return The output stream of the connected client. Used to communicate directly with this user.
-		 */
-		public ObjectOutputStream getOutputStream() {
-			return outputStream;
-		}
-		
-		/**
-		 * Waits for a client to connect, and continually listens for disconnect and message requests.
-		 */
-		@Override
-		public void run() {
-			try {
-				String method = inputStream.readUTF();
-				
-				if (method.equals("CONNECT")) {
-					Object obj = inputStream.readObject();
-					User user = (User) obj;
-					LOGGER.log(Level.INFO, String.format("%s (@%s) connected to the server.", user.getUsername(), socket.getInetAddress().toString()));
-					
-					synchronized (clientListeners) {
-						Iterator<ClientListener> iterator = clientListeners.iterator();
-						
-						while (iterator.hasNext()) {
-							ClientListener cl = iterator.next();
-							
-							if (user.equals(cl.getUser())) {
-								iterator.remove();
-								System.out.println("removed from clientlisteners: " + clientListeners.size());
-							}
-						}
-						
-						clientListeners.add(this);
-						System.out.println("Added to clientlisteners: " + clientListeners.size());
-					}
-					
-					if (clients.get(user) == null) {
-						clients.put(user, socket);
-						this.user = user;
-						updateUserList(user, "CONNECTED");
-					}
-
-					if (unsentMessages.containsKey(user)) {
-						handleUnsentMessages(this);
-					}
-				}
-				
-				while (!Thread.interrupted()) {
-					try {
-						String response = inputStream.readUTF();
-						
-						if (response.equals("DISCONNECT")) {
-							Object obj = inputStream.readObject();
-							User user = (User) obj;
-							
-							clients.put(user, null);
-							LOGGER.log(Level.INFO, String.format("%s (@%s) disconnected to the server.", user.getUsername(), socket.getInetAddress().toString()));
-							updateUserList(user, "DISCONNECTED");
-							interrupt();
-							return;
-						}
-						else if (response.equals("MESSAGE")) {
-							Object obj = inputStream.readObject();
-							List<Message> messages = (ArrayList) obj;
-							
-							for (Message message : messages) {
-								message.setServerReceived(Calendar.getInstance());
-							}
-							
-							sendMessage(messages.get(0));
+		clientListeners.add(listener);
+		System.out.println("Added to clientlisteners: " + clientListeners.size());
+	}
 	
-						}
-						
-						Thread.sleep(500);
-					}
-					catch (EOFException | SocketException ex) {
-						continue;
-					}
-					catch (InterruptedException ex) {
-						break;
-					}
-				}
-			}
-			catch (IOException | ClassNotFoundException ex) {
-				ex.printStackTrace();
-			}
-			finally {
-				try {
-					outputStream.close();
-					inputStream.close();
-				}
-				catch (IOException ex) {}
-			}
-		}
+	/**
+	 * If the given User is valid, assigns the Socket to it and sends an update to the other connected users.
+	 * @param user The user that has logged in.
+	 * @param socket The user's socket.
+	 */
+	public void updateIfNewLogin(User user, Socket socket) {
+		if (clients.get(user) == null) {
+			clients.put(user, socket);
+			updateUserList(user, "CONNECTED");
+		}	
+	}
+	
+	/**
+	 * Assigns the given Socket to the User.
+	 * @param user The User to assign the Socket to.
+	 * @param socket The Socket to be assigned.
+	 */
+	public void putUser(User user, Socket socket) {
+		clients.put(user, socket);
 	}
 }
